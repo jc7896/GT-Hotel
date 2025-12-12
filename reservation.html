@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GT HOTEL - RESERVATION</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🏎️</text></svg>">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;500;700&family=Orbitron:wght@500;700;900&display=swap" rel="stylesheet">
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+    <script type="text/javascript">
+        (function() { emailjs.init("ykorov92qkbV_EyHR"); })();
+    </script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background-color: #0f0f0f; color: white; font-family: 'Noto Sans KR', sans-serif; overflow-x: hidden; }
+        .container { max-width: 600px; margin: 50px auto; padding: 40px; background: #1a1a1a; border-radius: 15px; border: 1px solid #333; box-shadow: 0 10px 40px rgba(0,0,0,0.5); }
+        h1 { font-family: 'Orbitron'; color: #ff1e1e; text-align: center; margin-bottom: 30px; }
+        .form-group { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 8px; font-weight: bold; color: #ccc; }
+        input, select, textarea { width: 100%; padding: 12px; background: #222; border: 1px solid #444; color: white; border-radius: 5px; }
+        input:focus, select:focus, textarea:focus { border-color: #ff1e1e; outline: none; }
+        .btn-submit { width: 100%; padding: 15px; background: #ff1e1e; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 18px; font-family: 'Orbitron'; transition: 0.3s; }
+        .btn-submit:hover { background: #cc0000; transform: translateY(-2px); }
+        .btn-back { display: block; text-align: center; margin-top: 20px; color: #888; text-decoration: none; transition: 0.3s; }
+        .btn-back:hover { color: white; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>BOOKING FORM</h1>
+        <form id="bookingForm">
+            <div class="form-group">
+                <label>이름 (Name)</label>
+                <input type="text" id="name" placeholder="예: 홍길동" required>
+            </div>
+            <div class="form-group">
+                <label>체크인 날짜 (Date)</label>
+                <input type="date" id="date" required>
+            </div>
+            <div class="form-group">
+                <label>객실 타입 (Room Type)</label>
+                <select id="room">
+                    <option value="standard">STANDARD ROOM</option>
+                    <option value="deluxe">DELUXE ROOM</option>
+                    <option value="vip">VIP ROOM</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>프로모션 코드 (Promo Code)</label>
+                <input type="text" id="promoCode" placeholder="코드가 있다면 입력하세요">
+            </div>
+            <div class="form-group">
+                <label>요청사항 (Request)</label>
+                <textarea id="request" rows="3" placeholder="추가 요청사항을 적어주세요."></textarea>
+            </div>
+            <button type="button" class="btn-submit" onclick="sendReservation()">CONFIRM BOOKING</button>
+        </form>
+        <a href="garage.html" class="btn-back">← 객실 다시 선택하기</a>
+    </div>
+
+    <script>
+        window.addEventListener('load', function() {
+            const params = new URLSearchParams(window.location.search);
+            if(params.get('date')) document.getElementById('date').value = params.get('date');
+            if(params.get('room')) document.getElementById('room').value = params.get('room');
+            if(params.get('code')) document.getElementById('promoCode').value = params.get('code');
+        });
+
+        function sendReservation() {
+            const btn = document.querySelector(".btn-submit");
+            const name = document.getElementById('name').value;
+            const date = document.getElementById('date').value;
+            
+            if(!name || !date) { alert("예약자 성함과 날짜를 입력해 주십시오."); return; }
+
+            btn.innerText = "SENDING..."; 
+            
+            var templateParams = {
+                name: name, date: date, room: document.getElementById('room').value,
+                code: document.getElementById('promoCode').value, request: document.getElementById('request').value
+            };
+
+            emailjs.send('service_20kqmba', 'template_e3neon6', templateParams)
+                .then(function() {
+                    alert('예약이 완료되었습니다! 확인 메일을 발송했습니다.');
+                    location.href = "index.html"; 
+                }, function(error) {
+                    alert('오류 발생: ' + JSON.stringify(error));
+                    btn.innerText = "CONFIRM BOOKING";
+                });
+        }
+    </script>
+</body>
+</html>

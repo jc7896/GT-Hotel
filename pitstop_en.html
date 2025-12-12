@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GT PIT STOP - PIZZA & LOUNGE</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🍕</text></svg>">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;500;700&family=Orbitron:wght@500;700;900&display=swap" rel="stylesheet">
+    <style>
+        :root { --bg-color: #0f0f0f; --point-red: #ff1e1e; --warm-gold: #d4af37; }
+        * { margin: 0; padding: 0; box-sizing: border-box; cursor: none; } /* 커서 설정 유지 */
+        body { background-color: var(--bg-color); color: white; font-family: 'Orbitron', sans-serif; overflow-x: hidden; }
+        a { text-decoration: none; color: inherit; }
+
+        /* [Custom Cursor] */
+        .cursor-dot, .cursor-outline { position: fixed; top: 0; left: 0; transform: translate(-50%, -50%); border-radius: 50%; z-index: 999999; pointer-events: none; }
+        .cursor-dot { width: 8px; height: 8px; background-color: var(--point-red); }
+        .cursor-outline { width: 40px; height: 40px; border: 2px solid var(--point-red); transition: all 0.2s ease-out; }
+        body:hover .cursor-outline { opacity: 1; }
+        a:hover ~ .cursor-outline, button:hover ~ .cursor-outline, .menu-card:hover ~ .cursor-outline { transform: scale(1.5); background-color: rgba(255, 30, 30, 0.1); }
+
+        /* Navigation */
+        nav { padding: 20px 5%; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #222; background: rgba(15,15,15,0.95); position: sticky; top: 0; z-index: 100; }
+        .logo { font-family: 'Orbitron'; font-size: 24px; color: var(--point-red); font-weight: 900; }
+        .btn-home { color: #888; font-size: 14px; transition: 0.3s; font-family: 'Orbitron'; }
+        .btn-home:hover { color: white; }
+
+        /* Hero Section with Zoom Animation */
+        .hero { 
+            height: 60vh; position: relative; overflow: hidden;
+            display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center;
+        }
+        .hero-bg {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.8)), url('https://images.pexels.com/photos/1566837/pexels-photo-1566837.jpeg?auto=compress&cs=tinysrgb&w=1920') center/cover;
+            animation: zoomBg 20s infinite alternate; z-index: -1;
+        }
+        @keyframes zoomBg { from { transform: scale(1); } to { transform: scale(1.1); } }
+
+        .hero h1 { font-size: 4rem; margin-bottom: 10px; color: var(--point-red); text-shadow: 0 0 20px rgba(255,30,30,0.5); animation: fadeInUp 1s ease-out; }
+        .hero p { font-size: 1.5rem; color: #ccc; letter-spacing: 3px; animation: fadeInUp 1s ease-out 0.3s backwards; }
+
+        /* Menu Filter Buttons */
+        .filter-container { text-align: center; margin: 50px 0 30px; }
+        .filter-btn {
+            background: transparent; border: 1px solid #444; color: #888; padding: 10px 25px;
+            margin: 0 5px; cursor: none; font-family: 'Orbitron'; font-size: 14px; transition: 0.3s;
+            border-radius: 30px;
+        }
+        .filter-btn:hover, .filter-btn.active { background: var(--point-red); color: white; border-color: var(--point-red); box-shadow: 0 0 15px rgba(255,30,30,0.4); }
+
+        /* Menu Grid */
+        .menu-section { max-width: 1200px; margin: 0 auto; padding: 0 20px; min-height: 600px; }
+        .menu-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px; }
+        
+        /* Menu Card Interaction */
+        .menu-card { 
+            background: #1a1a1a; border-radius: 15px; overflow: hidden; border: 1px solid #333; 
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); opacity: 0; transform: translateY(30px);
+        }
+        .menu-card.visible { opacity: 1; transform: translateY(0); }
+        .menu-card:hover { transform: translateY(-10px); border-color: var(--point-red); box-shadow: 0 10px 40px rgba(255,30,30,0.3); }
+        
+        .img-wrapper { overflow: hidden; position: relative; height: 250px; }
+        .menu-img { width: 100%; height: 100%; object-fit: cover; transition: 0.5s; }
+        .menu-card:hover .menu-img { transform: scale(1.1); }
+        
+        /* Like Button (Heart) */
+        .like-btn {
+            position: absolute; top: 15px; right: 15px; background: rgba(0,0,0,0.6);
+            width: 40px; height: 40px; border-radius: 50%; display: flex; justify-content: center; align-items: center;
+            cursor: none; font-size: 20px; transition: 0.2s; backdrop-filter: blur(5px);
+        }
+        .like-btn:hover { transform: scale(1.2); background: white; color: red; }
+        .like-btn.liked { color: red; animation: heartPop 0.3s; }
+        @keyframes heartPop { 0% { transform: scale(1); } 50% { transform: scale(1.3); } 100% { transform: scale(1); } }
+
+        .menu-info { padding: 25px; position: relative; }
+        .menu-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
+        .menu-name { font-size: 1.4rem; color: white; margin: 0; }
+        .menu-price { font-size: 1.2rem; color: var(--warm-gold); font-weight: bold; }
+        .menu-desc { color: #888; font-size: 0.9rem; line-height: 1.6; font-family: 'Noto Sans KR'; margin-bottom: 20px; }
+        
+        .btn-order {
+            width: 100%; padding: 12px; background: #222; border: 1px solid #444; color: white;
+            font-family: 'Orbitron'; cursor: none; transition: 0.3s; border-radius: 5px;
+        }
+        .btn-order:hover { background: var(--warm-gold); color: black; border-color: var(--warm-gold); font-weight: bold; }
+
+        /* Info Section */
+        .info-section { background: #111; padding: 60px 20px; text-align: center; margin-top: 80px; border-top: 1px solid #333; }
+        .info-grid { max-width: 1000px; margin: 0 auto; display: flex; justify-content: space-around; flex-wrap: wrap; gap: 30px; }
+        .info-item h3 { color: var(--point-red); margin-bottom: 15px; }
+        .info-item p { color: #ccc; line-height: 1.8; font-family: 'Noto Sans KR'; }
+
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+        @media (max-width: 768px) {
+            .hero h1 { font-size: 2.5rem; }
+            .info-grid { flex-direction: column; }
+            .cursor-dot, .cursor-outline { display: none; } /* 모바일 커서 숨김 */
+        }
+    </style>
+</head>
+<body>
+    <div class="cursor-dot"></div>
+    <div class="cursor-outline"></div>
+
+    <nav>
+        <a href="index_en.html" class="logo">GT <span>PIT STOP</span></a>
+        <a href="index_en.html" class="btn-home">← Back to Lobby</a>
+    </nav>
+
+    <div class="hero">
+        <div class="hero-bg"></div>
+        <h1>FUEL UP YOUR TASTE</h1>
+        <p>PIZZA & PUB LOUNGE</p>
+    </div>
+
+    <div class="filter-container">
+        <button class="filter-btn active" onclick="filterMenu('all')">ALL</button>
+        <button class="filter-btn" onclick="filterMenu('pizza')">PIZZA</button>
+        <button class="filter-btn" onclick="filterMenu('burger')">BURGER</button>
+        <button class="filter-btn" onclick="filterMenu('drink')">DRINKS</button>
+    </div>
+
+    <div class="menu-section">
+        <div class="menu-grid" id="menuGrid">
+            <div class="menu-card" data-category="pizza">
+                <div class="img-wrapper">
+                    <img src="https://images.pexels.com/photos/825661/pexels-photo-825661.jpeg?auto=compress&cs=tinysrgb&w=800" class="menu-img">
+                    <div class="like-btn" onclick="toggleLike(this)">🤍</div>
+                </div>
+                <div class="menu-info">
+                    <div class="menu-header">
+                        <h3 class="menu-name">GT TURBO PIZZA</h3>
+                        <span class="menu-price">₩32,000</span>
+                    </div>
+                    <p class="menu-desc">Spicy pepperoni & jalapeño overload. Intense flavor that awakens your racing instinct.</p>
+                    <button class="btn-order" onclick="orderItem(this)">ADD TO ORDER</button>
+                </div>
+            </div>
+
+            <div class="menu-card" data-category="burger">
+                <div class="img-wrapper">
+                    <img src="https://images.pexels.com/photos/2983101/pexels-photo-2983101.jpeg?auto=compress&cs=tinysrgb&w=800" class="menu-img">
+                    <div class="like-btn" onclick="toggleLike(this)">🤍</div>
+                </div>
+                <div class="menu-info">
+                    <div class="menu-header">
+                        <h3 class="menu-name">CHECKERED BURGER</h3>
+                        <span class="menu-price">₩18,000</span>
+                    </div>
+                    <p class="menu-desc">Thick double patty meets premium black bun. A hearty meal for a perfect finish line.</p>
+                    <button class="btn-order" onclick="orderItem(this)">ADD TO ORDER</button>
+                </div>
+            </div>
+
+            <div class="menu-card" data-category="drink">
+                <div class="img-wrapper">
+                    <img src="https://images.pexels.com/photos/1089930/pexels-photo-1089930.jpeg?auto=compress&cs=tinysrgb&w=800" class="menu-img">
+                    <div class="like-btn" onclick="toggleLike(this)">🤍</div>
+                </div>
+                <div class="menu-info">
+                    <div class="menu-header">
+                        <h3 class="menu-name">ENGINE OIL DRAFT</h3>
+                        <span class="menu-price">₩9,000</span>
+                    </div>
+                    <p class="menu-desc">Deep dark stout with creamy foam. GT signature beer that flows smooth like engine oil.</p>
+                    <button class="btn-order" onclick="orderItem(this)">ADD TO ORDER</button>
+                </div>
+            </div>
+
+            <div class="menu-card" data-category="pizza">
+                <div class="img-wrapper">
+                    <img src="https://images.pexels.com/photos/365459/pexels-photo-365459.jpeg?auto=compress&cs=tinysrgb&w=800" class="menu-img">
+                    <div class="like-btn" onclick="toggleLike(this)">🤍</div>
+                </div>
+                <div class="menu-info">
+                    <div class="menu-header">
+                        <h3 class="menu-name">CHEESE SLICK</h3>
+                        <span class="menu-price">₩28,000</span>
+                    </div>
+                    <p class="menu-desc">Quadruple cheese blend for the ultimate cheesy drift experience.</p>
+                    <button class="btn-order" onclick="orderItem(this)">ADD TO ORDER</button>
+                </div>
+            </div>
+
+            <div class="menu-card" data-category="drink">
+                <div class="img-wrapper">
+                    <img src="https://images.pexels.com/photos/338713/pexels-photo-338713.jpeg?auto=compress&cs=tinysrgb&w=800" class="menu-img">
+                    <div class="like-btn" onclick="toggleLike(this)">🤍</div>
+                </div>
+                <div class="menu-info">
+                    <div class="menu-header">
+                        <h3 class="menu-name">NITRO COCKTAIL</h3>
+                        <span class="menu-price">₩12,000</span>
+                    </div>
+                    <p class="menu-desc">Blue curaçao & Energy drink mix. Boost your night.</p>
+                    <button class="btn-order" onclick="orderItem(this)">ADD TO ORDER</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="info-section">
+        <div class="info-grid">
+            <div class="info-item">
+                <h3>OPENING HOURS</h3>
+                <p>Mon - Thu: 17:00 - 01:00<br>Fri - Sun: 17:00 - 03:00</p>
+            </div>
+            <div class="info-item">
+                <h3>LOCATION</h3>
+                <p>GT Hotel 1F, Main Hall<br>Next to Casino Zone</p>
+            </div>
+            <div class="info-item">
+                <h3>CONTACT</h3>
+                <p>Room Service: Ext. 777<br>No Reservation Needed</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Custom Cursor Logic
+        const cursorDot = document.querySelector('.cursor-dot');
+        const cursorOutline = document.querySelector('.cursor-outline');
+        window.addEventListener('mousemove', function(e) {
+            const posX = e.clientX;
+            const posY = e.clientY;
+            cursorDot.style.left = `${posX}px`;
+            cursorDot.style.top = `${posY}px`;
+            cursorOutline.animate({ left: `${posX}px`, top: `${posY}px` }, { duration: 500, fill: "forwards" });
+        });
+
+        // Filter Logic
+        function filterMenu(category) {
+            const cards = document.querySelectorAll('.menu-card');
+            const buttons = document.querySelectorAll('.filter-btn');
+
+            // Button Active State
+            buttons.forEach(btn => {
+                if(btn.innerText.toLowerCase() === category || (category === 'all' && btn.innerText === 'ALL')) {
+                    btn.classList.add('active');
+                } else {
+                    btn.classList.remove('active');
+                }
+            });
+
+            // Card Filtering
+            cards.forEach(card => {
+                if (category === 'all' || card.dataset.category === category) {
+                    card.style.display = 'block';
+                    setTimeout(() => card.classList.add('visible'), 50); // Re-trigger anim
+                } else {
+                    card.style.display = 'none';
+                    card.classList.remove('visible');
+                }
+            });
+        }
+
+        // Like Button Interaction
+        function toggleLike(btn) {
+            btn.classList.toggle('liked');
+            btn.innerText = btn.classList.contains('liked') ? '❤️' : '🤍';
+        }
+
+        // Order Button Feedback
+        function orderItem(btn) {
+            const originalText = btn.innerText;
+            btn.innerText = "ADDED! ✓";
+            btn.style.background = "#d4af37";
+            btn.style.color = "black";
+            
+            setTimeout(() => {
+                btn.innerText = originalText;
+                btn.style.background = "#222";
+                btn.style.color = "white";
+            }, 1500);
+        }
+
+        // Scroll Animation (Intersection Observer)
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, { threshold: 0.1 });
+
+        document.querySelectorAll('.menu-card').forEach((card, index) => {
+            // Stagger animation delay
+            card.style.transitionDelay = `${index * 0.1}s`;
+            observer.observe(card);
+        });
+    </script>
+</body>
+</html>

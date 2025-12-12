@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GT HOTEL - The Racer's Sanctuary</title>
+    
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#ff1e1e">
+
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🏎️</text></svg>">
+    <meta property="og:title" content="GT HOTEL">
+    <meta property="og:description" content="Where speed meets luxury. Check in now for the ultimate racing experience.">
+    <meta property="og:image" content="https://images.pexels.com/photos/3311574/pexels-photo-3311574.jpeg?auto=compress&cs=tinysrgb&w=1260">
+    
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;500;700&family=Orbitron:wght@500;700;900&family=Cinzel:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        /* CSS는 한국어 버전과 동일 */
+        * { margin: 0; padding: 0; box-sizing: border-box; cursor: none; }
+        :root { --bg-color: #0f0f0f; --wood-dark: #2c2018; --point-red: #ff1e1e; --warm-gold: #d4af37; }
+        body { background-color: var(--bg-color); color: white; font-family: 'Orbitron', sans-serif; overflow-x: hidden; transition: transform 0.5s; }
+        a { text-decoration: none; color: inherit; transition: 0.3s; display: block; }
+
+        .cursor-dot, .cursor-outline {
+            position: fixed; top: 0; left: 0; transform: translate(-50%, -50%);
+            border-radius: 50%; z-index: 999999; pointer-events: none;
+        }
+        .cursor-dot { width: 8px; height: 8px; background-color: var(--point-red); }
+        .cursor-outline { width: 40px; height: 40px; border: 2px solid var(--point-red); transition: all 0.2s ease-out; }
+        
+        body:hover .cursor-outline { opacity: 1; }
+        .hover-target:hover ~ .cursor-outline, 
+        a:hover ~ .cursor-outline, 
+        button:hover ~ .cursor-outline { 
+            transform: translate(-50%, -50%) scale(1.5); 
+            background-color: rgba(255, 30, 30, 0.1);
+        }
+
+        body.dev-mode { border: 10px solid var(--warm-gold); transform: rotate(180deg); }
+        .dev-toast {
+            position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
+            background: var(--warm-gold); color: black; padding: 15px 30px;
+            font-family: 'Orbitron'; font-weight: bold; z-index: 100000;
+            border-radius: 30px; box-shadow: 0 0 20px var(--warm-gold);
+            display: none; animation: slideDown 0.5s;
+        }
+        @keyframes slideDown { from { top: -50px; } to { top: 20px; } }
+
+        #intro-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: #000; z-index: 99999; display: flex; flex-direction: column; justify-content: center; align-items: center; transition: transform 0.8s cubic-bezier(0.77, 0, 0.175, 1); }
+        #intro-overlay.slide-up { transform: translateY(-100%); }
+        #intro-overlay.hidden { display: none !important; }
+        .intro-logo { font-family: 'Orbitron'; font-size: 50px; font-weight: 900; color: var(--point-red); margin-bottom: 60px; letter-spacing: 5px; animation: pulse 2s infinite; text-align: center; cursor: none; }
+        .intro-logo span { color: white; }
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.02); } 100% { transform: scale(1); } }
+        .lang-box { display: flex; gap: 30px; flex-wrap: wrap; justify-content: center; }
+        .lang-btn { background: transparent; border: 2px solid #333; color: #888; padding: 15px 50px; font-family: 'Orbitron'; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.3s; border-radius: 5px; letter-spacing: 2px; cursor: none; }
+        .lang-btn:hover { background: var(--point-red); border-color: var(--point-red); color: white; transform: translateY(-3px); }
+        .loading-container { display: none; text-align: center; width: 300px; max-width: 90%; }
+        .loading-info { display: flex; justify-content: space-between; margin-bottom: 10px; font-family: 'Orbitron'; font-size: 14px; color: var(--point-red); }
+        .progress-bar { width: 100%; height: 6px; background: #222; border-radius: 3px; overflow: hidden; }
+        .progress-fill { height: 100%; background: var(--point-red); width: 0%; transition: width 0.1s linear; }
+        
+        header { position: fixed; top: 0; width: 100%; padding: 20px 5%; display: flex; justify-content: space-between; align-items: center; z-index: 1000; background: rgba(15,15,15,0.8); backdrop-filter: blur(5px); border-bottom: 1px solid rgba(255,255,255,0.1); }
+        .logo { font-size: 24px; font-weight: 900; letter-spacing: 2px; color: var(--point-red); }
+        .logo span { color: white; }
+        nav ul { display: flex; gap: 30px; list-style: none; }
+        nav a { font-size: 14px; text-transform: uppercase; font-weight: 500; display: inline-block; font-family: 'Orbitron', sans-serif; cursor: none; }
+        nav a:hover { color: var(--point-red); }
+        .btn-reserve { background: transparent; color: var(--point-red); border: 2px solid var(--point-red); padding: 8px 20px; border-radius: 30px; font-weight: 700; cursor: none; transition: 0.3s; display: inline-block; font-family: 'Orbitron', sans-serif; }
+        .btn-reserve:hover { background: var(--point-red); color: white; transform: scale(1.05); }
+        .hero { height: 100vh; position: relative; display: flex; align-items: center; padding-left: 10%; overflow: hidden; }
+        .hero-video { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: 0; }
+        .hero-overlay { position: absolute; inset: 0; background: linear-gradient(90deg, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.3) 100%); z-index: 1; pointer-events: none; }
+        .hero-content { position: relative; z-index: 10; max-width: 700px; width: 90%; opacity: 0; transform: translateY(30px); transition: 1s ease-out; } 
+        .hero-content.show { opacity: 1; transform: translateY(0); } 
+        .hero h1 { font-size: 48px; line-height: 1.2; font-weight: 700; margin-bottom: 20px; word-break: keep-all; }
+        .hero p { font-family: 'Noto Sans KR', sans-serif; font-size: 18px; color: #ccc; line-height: 1.6; position: relative; padding-left: 20px; opacity: 0; transform: translateX(30px); }
+        .hero p::before { content: ''; position: absolute; left: 0; top: 0; width: 4px; height: 100%; background: var(--point-red); transform: translateX(30px); opacity: 0; }
+        .hero-content.show p { animation: fadeInText 0.8s ease-out forwards; animation-delay: 0.3s; }
+        .hero-content.show p::before { animation: slideInLine 0.8s ease-out forwards; }
+        @keyframes slideInLine { from { transform: translateX(30px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        @keyframes fadeInText { from { opacity: 0; transform: translateX(30px); } to { opacity: 1; transform: translateX(0); } }
+        .facilities { padding: 80px 20px; text-align: center; position: relative; z-index: 5; }
+        .section-title { margin-bottom: 100px; opacity: 0; transform: translateY(30px); transition: 0.8s; }
+        .section-title.visible { opacity: 1; transform: translateY(0); }
+        .section-title h2 { font-size: 36px; color: var(--point-red); margin-bottom: 10px; }
+        .section-title p { font-family: 'Noto Sans KR'; font-size: 16px; color: #888; }
+        .grid-container { display: flex; flex-wrap: wrap; justify-content: center; gap: 30px; max-width: 1400px; margin: 0 auto; }
+        .card { background: var(--wood-dark); width: 300px; height: 400px; border-radius: 12px; overflow: hidden; position: relative; cursor: none; box-shadow: 0 5px 15px rgba(0,0,0,0.3); display: block; opacity: 0; transform: translateY(50px); transition: opacity 0.6s ease-out, transform 0.6s ease-out; }
+        .card.visible { opacity: 1; transform: translateY(0); }
+        .card:hover { transform: translateY(-15px) !important; box-shadow: 0 15px 30px rgba(255, 30, 30, 0.3); }
+        .card img { width: 100%; height: 100%; object-fit: cover; transition: 0.5s; }
+        .card:hover img { transform: scale(1.1); }
+        .card-info { position: absolute; bottom: 20px; left: 20px; z-index: 20; text-align: left; width: 85%; }
+        .card-info h3 { font-size: 22px; margin-bottom: 5px; text-shadow: 2px 2px 4px black; }
+        .card-info p { font-family: 'Noto Sans KR', sans-serif; font-size: 14px; color: #ddd; text-shadow: 1px 1px 2px black; }
+        .card-overlay { position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,0.95), transparent); pointer-events: none; }
+        .music-widget-container { margin: 120px auto 60px; max-width: 700px; width: 95%; display: flex; justify-content: center; }
+        .music-widget { display: flex; align-items: center; justify-content: space-between; width: 100%; padding: 15px 25px; background: rgba(10, 5, 0, 0.85); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border: 1px solid rgba(212, 175, 55, 0.5); border-radius: 100px; box-shadow: 0 10px 30px rgba(0,0,0,0.5), 0 0 20px rgba(212, 175, 55, 0.15); transition: 0.3s; cursor: none; }
+        .music-widget:hover { transform: translateY(-5px); box-shadow: 0 15px 40px rgba(0,0,0,0.6), 0 0 30px rgba(212, 175, 55, 0.3); border-color: #ffd700; }
+        .album-art { width: 60px; height: 60px; border-radius: 50%; background: url('https://images.pexels.com/photos/5774904/pexels-photo-5774904.jpeg?auto=compress&cs=tinysrgb&w=800') no-repeat center center/cover; border: 2px solid #d4af37; animation: spin 10s linear infinite; animation-play-state: paused; flex-shrink: 0; }
+        .album-art.playing { animation-play-state: running; }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+        .track-info { flex-grow: 1; padding: 0 20px; text-align: left; }
+        .track-title { font-family: 'Cinzel', serif; color: #ffd700; font-size: 18px; margin-bottom: 4px; text-shadow: 0 0 5px rgba(255, 215, 0, 0.5); }
+        .track-desc { font-size: 13px; color: #aaa; font-weight: 300; font-family: 'Noto Sans KR', sans-serif; }
+        .widget-controls { display: flex; align-items: center; gap: 15px; }
+        .play-btn { width: 50px; height: 50px; border-radius: 50%; background: linear-gradient(to bottom, #444, #000); color: white; border: 2px solid #222; cursor: none; display: flex; justify-content: center; align-items: center; font-size: 20px; transition: 0.3s; padding-left: 3px; box-shadow: 0 5px 15px rgba(0,0,0,0.5), inset 0 1px 1px rgba(255,255,255,0.3); }
+        .play-btn.paused { padding-left: 0; }
+        .play-btn:hover { transform: scale(1.1); background: linear-gradient(to bottom, #555, #111); border-color: #d4af37; }
+        .link-btn { font-family: 'Orbitron', sans-serif; font-size: 12px; color: #d4af37; border: 1px solid #d4af37; padding: 8px 15px; border-radius: 20px; text-decoration: none; transition: 0.3s; cursor: none; }
+        .link-btn:hover { background: #d4af37; color: #000; font-weight: bold; }
+        footer { padding: 50px 20px; text-align: center; color: #555; background: #0a0a0a; border-top: 1px solid #222; font-size: 14px; }
+
+        @media (max-width: 768px) {
+            * { cursor: auto !important; }
+            .cursor-dot, .cursor-outline { display: none; }
+            header { flex-direction: column; gap: 15px; padding: 15px; background: rgba(15,15,15,0.95); }
+            nav ul { gap: 15px; flex-wrap: wrap; justify-content: center; }
+            .hero { padding-left: 5%; justify-content: center; text-align: center; }
+            .hero-content { width: 100%; padding: 0 20px; }
+            .hero h1 { font-size: 2.5rem; }
+            .section-title { margin-bottom: 60px; }
+            .card { width: 100%; max-width: 400px; height: 350px; }
+            .section-title h2 { font-size: 28px; }
+            .music-widget { padding: 12px 15px; border-radius: 20px; flex-wrap: wrap; justify-content: center; text-align: center; gap: 15px; }
+            .track-info { padding: 0; text-align: center; width: 100%; margin: 5px 0; }
+            .widget-controls { width: 100%; justify-content: center; }
+        }
+    </style>
+</head>
+<body>
+    <div class="cursor-dot"></div>
+    <div class="cursor-outline"></div>
+    
+    <div id="devToast" class="dev-toast">🕵️ SECRET DEV MODE ACTIVATED</div>
+
+    <div id="intro-overlay">
+        <div class="intro-logo">GT <span>HOTEL</span></div>
+        <div class="lang-box" id="langBox">
+            <button class="lang-btn" onclick="startLoading('kr')">KOREAN</button>
+            <button class="lang-btn" onclick="startLoading('en')">ENGLISH</button>
+        </div>
+        <div class="loading-container" id="loadingBox">
+            <div class="loading-info"><span id="loadingText">IGNITION...</span><span class="rpm-counter" id="rpmText">0</span></div>
+            <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+        </div>
+    </div>
+
+    <audio id="engineSound" src="engine.mp3"></audio>
+    <audio id="xmasSong" src="jinglebells.mp3" loop></audio>
+
+    <header id="navbar">
+        <div class="logo">GT <span>HOTEL</span></div>
+        <nav>
+            <ul>
+                <li><a href="circuit_en.html">Circuit</a></li>
+                <li><a href="casino_en.html">Casino</a></li>
+                <li><a href="pitstop_en.html">Pit Stop</a></li> <li><a href="guestbook_en.html">Community</a></li> <li><a href="garage_en.html">Garage</a></li> </ul>
+        </nav>
+        <button onclick="startEngine()" class="btn-reserve">ENGINE START</button>
+    </header>
+
+    <section class="hero">
+        <video class="hero-video" autoplay muted loop playsinline>
+            <source src="background.mp4" type="video/mp4">
+        </video>
+        <div class="hero-overlay"></div>
+        <div class="hero-content" id="heroContent">
+            <span style="color:var(--point-red); font-weight:bold; letter-spacing:3px;">GRAND TOURING HOTEL</span>
+            <h1>SPEED MEETS<br>LUXURY WOOD.</h1>
+            <p>Experience the thrill of 300km/h on the track,<br>and find perfect rest in our heavy wood suites.</p>
+        </div>
+    </section>
+
+    <section class="facilities">
+        <div class="section-title" id="title-anim">
+            <h2>FACILITIES</h2>
+            <p>Ready to Race? Check your status.</p>
+        </div>
+
+        <div class="grid-container">
+            <a href="circuit_en.html" class="card anim-card">
+                <img src="https://images.pexels.com/photos/12795/pexels-photo-12795.jpeg?auto=compress&cs=tinysrgb&w=800"><div class="card-overlay"></div><div class="card-info"><h3>F1 CIRCUIT</h3><p>Real Driving Simulation</p></div>
+            </a>
+            <a href="privatebeach.html" class="card anim-card">
+                <img src="https://images.pexels.com/photos/1005417/pexels-photo-1005417.jpeg?auto=compress&cs=tinysrgb&w=800"><div class="card-overlay"></div><div class="card-info"><h3>PRIVATE BEACH</h3><p>Sunset Party & Relax</p></div>
+            </a>
+            <a href="casino_en.html" class="card anim-card">
+                <img src="https://images.pexels.com/photos/3279695/pexels-photo-3279695.jpeg?auto=compress&cs=tinysrgb&w=800"><div class="card-overlay"></div><div class="card-info"><h3>CASINO ZONE</h3><p>High Stakes Lounge</p></div>
+            </a>
+            <a href="pitstop_en.html" class="card anim-card">
+                <img src="https://images.pexels.com/photos/1653877/pexels-photo-1653877.jpeg?auto=compress&cs=tinysrgb&w=800"><div class="card-overlay"></div><div class="card-info"><h3>PIT STOP</h3><p>Pizza & Dining</p></div>
+            </a>
+        </div>
+
+        <div class="music-widget-container anim-card">
+            <div class="music-widget">
+                <div class="album-art" id="albumArt"></div>
+                <div class="track-info">
+                    <div class="track-title">🎄 A Warm & Cozy Christmas</div>
+                    <div class="track-desc">The warmest sanctuary after the cold track.</div>
+                </div>
+                <div class="widget-controls">
+                    <button class="play-btn" onclick="toggleMusic()">▶</button>
+                    <a href="christmas_en.html" class="link-btn">Check Event ></a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <div class="logo" style="margin-bottom: 20px; font-size: 20px;">GT <span>HOTEL</span></div>
+        <p>Incheon, South Korea | Email: jc7896h@gmail.com</p>
+        <p style="margin-top: 10px;">&copy; 2025 GT HOTEL. All rights reserved. Designed for Racers.</p>
+    </footer>
+
+    <script>
+        const cursorDot = document.querySelector('.cursor-dot');
+        const cursorOutline = document.querySelector('.cursor-outline');
+
+        window.addEventListener('mousemove', function(e) {
+            const posX = e.clientX;
+            const posY = e.clientY;
+            cursorDot.style.left = `${posX}px`;
+            cursorDot.style.top = `${posY}px`;
+            cursorOutline.animate({
+                left: `${posX}px`,
+                top: `${posY}px`
+            }, { duration: 500, fill: "forwards" });
+        });
+
+        sessionStorage.setItem('siteLang', 'en');
+
+        window.addEventListener('load', function() {
+            if (sessionStorage.getItem('visited')) {
+                document.getElementById('intro-overlay').classList.add('hidden');
+                document.getElementById('heroContent').classList.add('show');
+            }
+        });
+
+        function startLoading(lang) {
+            const langBox = document.getElementById('langBox');
+            const loadingBox = document.getElementById('loadingBox');
+            const fill = document.getElementById('progressFill');
+            const text = document.getElementById('loadingText');
+            const rpm = document.getElementById('rpmText');
+
+            langBox.style.display = 'none';
+            loadingBox.style.display = 'block';
+
+            let progress = 0;
+            const interval = setInterval(() => {
+                progress += 2; 
+                let currentRpm = Math.floor(progress * 80); 
+                rpm.innerText = currentRpm + " RPM";
+                fill.style.width = progress + '%';
+
+                if(progress < 30) text.innerText = "CHECKING TIRES...";
+                else if(progress < 60) text.innerText = "FUEL INJECTION...";
+                else if(progress < 90) text.innerText = "ENGINE START...";
+                else text.innerText = "GO!";
+
+                if(progress >= 100) {
+                    clearInterval(interval);
+                    sessionStorage.setItem('visited', 'true');
+                    
+                    if(lang === 'en') {
+                        // [수정됨: 영어 페이지 그대로 보여주기]
+                        document.getElementById('intro-overlay').classList.add('slide-up');
+                        setTimeout(() => { document.getElementById('heroContent').classList.add('show'); }, 500);
+                    } else {
+                        // [수정됨: 한국어 클릭 시 index.html로 이동]
+                        window.location.href = 'index.html';
+                    }
+                }
+            }, 20);
+        }
+
+        window.addEventListener('scroll', function() {
+            const header = document.getElementById('navbar');
+            if (window.scrollY > 50) header.classList.add('scrolled');
+            else header.classList.remove('scrolled');
+        });
+
+        function startEngine() {
+            const audio = document.getElementById("engineSound");
+            const btn = document.querySelector(".btn-reserve");
+            btn.innerText = "REVING...";
+            btn.style.backgroundColor = "#ff1e1e";
+            btn.style.color = "white";
+            if(audio) { audio.currentTime=0; audio.play().catch(e => {}); }
+            setTimeout(function() { location.href = "reservation_en.html"; }, 4500); 
+        }
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => { if(entry.isIntersecting) entry.target.classList.add('visible'); });
+        }, { threshold: 0.1 });
+        observer.observe(document.getElementById('title-anim'));
+        document.querySelectorAll('.anim-card').forEach(card => observer.observe(card));
+
+        function toggleMusic() {
+            const song = document.getElementById('xmasSong');
+            const art = document.getElementById('albumArt');
+            const btn = document.querySelector('.play-btn');
+
+            if (song.paused) {
+                song.play().catch(e => alert("Please ensure 'jinglebells.mp3' is in the folder!"));
+                art.classList.add('playing');
+                btn.innerText = '⏸';
+                btn.classList.add('paused');
+            } else {
+                song.pause();
+                art.classList.remove('playing');
+                btn.innerText = '▶';
+                btn.classList.remove('paused');
+            }
+        }
+
+        const konamiCode = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'b', 'a'];
+        let konamiIndex = 0;
+
+        document.addEventListener('keydown', function(e) {
+            if (e.key === konamiCode[konamiIndex] || e.key.toLowerCase() === konamiCode[konamiIndex]) {
+                konamiIndex++;
+                if (konamiIndex === konamiCode.length) {
+                    activateDevMode();
+                    konamiIndex = 0;
+                }
+            } else {
+                konamiIndex = 0;
+            }
+        });
+
+        function activateDevMode() {
+            document.body.classList.toggle('dev-mode');
+            const toast = document.getElementById('devToast');
+            toast.style.display = 'block';
+            setTimeout(() => { toast.style.display = 'none'; }, 3000);
+        }
+    </script>
+</body>
+</html>

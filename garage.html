@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GT HOTEL - ROOMS</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🏎️</text></svg>">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;500;700&family=Orbitron:wght@500;700;900&family=Cinzel:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root { --bg-color: #0f0f0f; --wood-dark: #2c2018; --point-red: #ff1e1e; --warm-gold: #d4af37; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background-color: var(--bg-color); color: white; font-family: 'Noto Sans KR', sans-serif; overflow-x: hidden; }
+        a { text-decoration: none; color: inherit; }
+
+        nav { padding: 20px 5%; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #222; background: rgba(15,15,15,0.95); position: sticky; top: 0; z-index: 100; }
+        .logo { font-family: 'Orbitron'; font-size: 24px; color: var(--point-red); font-weight: 900; }
+        .btn-home { color: #888; font-size: 14px; transition: 0.3s; }
+        .btn-home:hover { color: white; }
+
+        .container { max-width: 1200px; margin: 0 auto; padding: 40px 20px; display: flex; flex-wrap: wrap; gap: 40px; }
+        
+        /* 왼쪽: 방 정보 */
+        .room-details { flex: 2; min-width: 300px; transition: 0.3s; }
+        .room-header { margin-bottom: 20px; border-bottom: 1px solid #333; padding-bottom: 20px; }
+        
+        .room-badge { display: inline-block; padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: bold; margin-bottom: 10px; font-family: 'Orbitron'; }
+        .badge-standard { background: #333; color: #ccc; border: 1px solid #555; }
+        .badge-deluxe { background: #2c2018; color: #ffa500; border: 1px solid #ffa500; }
+        .badge-vip { background: #000; color: var(--warm-gold); border: 1px solid var(--warm-gold); box-shadow: 0 0 10px rgba(212,175,55,0.3); }
+
+        .room-title { font-family: 'Orbitron'; font-size: 36px; color: white; margin-bottom: 10px; }
+        .room-subtitle { color: var(--warm-gold); font-size: 16px; font-family: 'Cinzel', serif; }
+        .main-img { width: 100%; height: 400px; object-fit: cover; border-radius: 15px; margin-bottom: 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); transition: 0.3s; }
+        .description { font-size: 16px; line-height: 1.8; color: #ccc; margin-bottom: 40px; text-align: justify; }
+        
+        /* 편의시설 */
+        .amenities-title { font-family: 'Orbitron'; font-size: 20px; margin-bottom: 15px; color: #fff; border-left: 4px solid var(--point-red); padding-left: 10px; }
+        .amenities-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin-bottom: 40px; }
+        .amenity-item { background: #1a1a1a; padding: 15px; border-radius: 8px; text-align: center; color: #aaa; border: 1px solid #333; }
+        .amenity-item span { display: block; font-size: 24px; margin-bottom: 5px; }
+
+        /* 하단: 룸 선택 카드 (Standard / Deluxe / VIP) */
+        .other-rooms { margin-top: 60px; padding-top: 40px; border-top: 1px solid #333; }
+        .other-title { font-family: 'Orbitron'; font-size: 24px; margin-bottom: 20px; color: #fff; text-align: center; }
+        .rooms-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+        .room-card { 
+            background: #1a1a1a; border-radius: 10px; overflow: hidden; transition: 0.3s; cursor: pointer; border: 1px solid #333; 
+            opacity: 0.5; filter: grayscale(100%); /* 기본적으로 흐리게 */
+        }
+        .room-card:hover { transform: translateY(-5px); opacity: 0.8; filter: grayscale(0%); }
+        
+        /* 선택된 방 강조 스타일 */
+        .room-card.active { 
+            border: 2px solid var(--point-red); opacity: 1; filter: grayscale(0%); 
+            box-shadow: 0 0 20px rgba(255,30,30,0.3); transform: scale(1.05); 
+        }
+        .room-card img { width: 100%; height: 120px; object-fit: cover; }
+        .room-card-info { padding: 15px; text-align: center; }
+        .room-card h3 { font-family: 'Orbitron'; font-size: 14px; margin-bottom: 5px; color: white; }
+        .room-card p { font-size: 11px; color: #888; }
+
+        /* 오른쪽: 예약 위젯 */
+        .booking-sidebar { flex: 1; min-width: 320px; }
+        .booking-widget { background: #1a1a1a; padding: 25px; border-radius: 15px; border: 1px solid var(--warm-gold); box-shadow: 0 10px 40px rgba(0,0,0,0.6); position: sticky; top: 100px; transition: 0.3s; }
+        .widget-title { font-family: 'Orbitron'; font-size: 20px; margin-bottom: 20px; text-align: center; color: var(--warm-gold); }
+        
+        .calendar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; color: white; }
+        .month-btn { cursor: pointer; user-select: none; font-size: 18px; color: #888; }
+        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; text-align: center; margin-bottom: 20px; }
+        .day-name { font-size: 12px; color: #555; margin-bottom: 5px; }
+        .day { font-size: 14px; padding: 8px 0; border-radius: 5px; cursor: pointer; color: #ccc; transition: 0.2s; }
+        .day:hover:not(.empty) { background: #333; }
+        .day.selected { background: var(--point-red); color: white; font-weight: bold; }
+        .day.today { border: 1px solid #555; }
+        .day.empty { cursor: default; }
+
+        .price-box { background: #222; padding: 15px; border-radius: 8px; text-align: center; margin-bottom: 20px; }
+        .price-label { font-size: 12px; color: #888; margin-bottom: 5px; }
+        .final-price { font-family: 'Orbitron'; font-size: 28px; color: white; font-weight: bold; }
+        .price-msg { font-size: 12px; color: var(--warm-gold); margin-top: 5px; }
+        
+        .btn-reserve { width: 100%; padding: 15px; background: var(--point-red); color: white; border: none; border-radius: 8px; font-family: 'Orbitron'; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        .btn-reserve:hover { background: #cc0000; transform: translateY(-2px); }
+
+        @media (max-width: 768px) { 
+            .container { flex-direction: column; } 
+            .booking-widget { position: static; } 
+            .rooms-grid { grid-template-columns: 1fr; } 
+        }
+    </style>
+</head>
+<body>
+
+    <nav>
+        <a href="index.html" class="logo">GT <span>HOTEL</span></a>
+        <a href="index.html" class="btn-home">← Back to Lobby</a>
+    </nav>
+
+    <div class="container">
+        <div class="room-details">
+            <div class="room-header">
+                <span id="rBadge" class="room-badge badge-standard">STANDARD</span>
+                <h1 class="room-title" id="rTitle">STANDARD GARAGE</h1>
+                <span class="room-subtitle" id="rSubtitle">The Basic Racer</span>
+            </div>
+            
+            <img src="" class="main-img" id="rImg" alt="Room Image">
+            
+            <div class="description">
+                <p id="rDesc">...</p>
+            </div>
+
+            <div class="amenities-title">AMENITIES</div>
+            <div class="amenities-grid" id="rAmenities">
+                </div>
+
+            <div class="other-rooms">
+                <h2 class="other-title">CHOOSE YOUR CLASS</h2>
+                <div class="rooms-grid">
+                    <div class="room-card" id="card-standard" onclick="switchRoom('standard')">
+                        <img src="https://images.pexels.com/photos/271624/pexels-photo-271624.jpeg?auto=compress&cs=tinysrgb&w=800">
+                        <div class="room-card-info">
+                            <h3>STANDARD ROOM</h3>
+                            <p>기본 차고 스타일</p>
+                        </div>
+                    </div>
+                    <div class="room-card" id="card-deluxe" onclick="switchRoom('deluxe')">
+                        <img src="https://images.pexels.com/photos/164595/pexels-photo-164595.jpeg?auto=compress&cs=tinysrgb&w=800">
+                        <div class="room-card-info">
+                            <h3>DELUXE ROOM</h3>
+                            <p>패독 뷰 업그레이드</p>
+                        </div>
+                    </div>
+                    <div class="room-card" id="card-vip" onclick="switchRoom('vip')">
+                        <img src="https://images.pexels.com/photos/258154/pexels-photo-258154.jpeg?auto=compress&cs=tinysrgb&w=800">
+                        <div class="room-card-info">
+                            <h3>VIP ROOM</h3>
+                            <p>최상위 챔피언 스위트</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="booking-sidebar">
+            <div class="booking-widget">
+                <div class="widget-title">SELECT DATE</div>
+                
+                <div class="calendar-header">
+                    <div class="month-btn" onclick="changeMonth(-1)">◀</div>
+                    <span id="currentMonth" style="font-weight:bold;">December 2024</span>
+                    <div class="month-btn" onclick="changeMonth(1)">▶</div>
+                </div>
+
+                <div class="calendar-grid">
+                    <div class="day-name" style="color:#d9534f">Sun</div><div class="day-name">Mon</div><div class="day-name">Tue</div><div class="day-name">Wed</div><div class="day-name">Thu</div><div class="day-name">Fri</div><div class="day-name" style="color:#4a90e2">Sat</div>
+                </div>
+                <div class="calendar-grid" id="calendarDays"></div>
+
+                <div class="price-box">
+                    <div class="price-label">1 Night / Total</div>
+                    <div class="final-price" id="priceDisplay">₩0</div>
+                    <div class="price-msg" id="priceDetail">날짜를 선택하세요</div>
+                </div>
+
+                <button class="btn-reserve" onclick="goToReservation()">RESERVE NOW</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // [방 데이터: Standard, Deluxe, VIP]
+        const roomDB = {
+            standard: {
+                badge: "STANDARD", badgeClass: "badge-standard",
+                title: "STANDARD ROOM",
+                subtitle: "Garage Style Comfort",
+                img: "https://images.pexels.com/photos/271624/pexels-photo-271624.jpeg?auto=compress&cs=tinysrgb&w=800",
+                desc: "가장 기본적인 차고 스타일의 객실입니다. 합리적인 가격으로 GT 호텔의 감성을 느낄 수 있습니다. 퀸사이즈 베드와 레이싱 시뮬레이터가 포함됩니다.",
+                amenities: ["🏎️ Racing Sim", "🛏️ Queen Bed", "🚿 Shower Booth", "☕ Mini Bar"],
+                price: { week: 300000, friSun: 350000, sat: 450000 }
+            },
+            deluxe: {
+                badge: "DELUXE", badgeClass: "badge-deluxe",
+                title: "DELUXE ROOM",
+                subtitle: "Paddock View Suite",
+                img: "https://images.pexels.com/photos/164595/pexels-photo-164595.jpeg?auto=compress&cs=tinysrgb&w=800",
+                desc: "더 넓은 공간과 욕조, 그리고 서킷 뷰를 자랑하는 디럭스 룸입니다. 킹사이즈 베드와 와인 셀러가 추가되어 여유로운 휴식을 제공합니다.",
+                amenities: ["🏁 Circuit View", "🛏️ King Bed", "🛁 Bathtub", "🍷 Wine Cellar"],
+                price: { week: 500000, friSun: 600000, sat: 700000 }
+            },
+            vip: {
+                badge: "VIP", badgeClass: "badge-vip",
+                title: "VIP ROOM",
+                subtitle: "The Champion's Podium",
+                img: "https://images.pexels.com/photos/258154/pexels-photo-258154.jpeg?auto=compress&cs=tinysrgb&w=800",
+                desc: "GT 호텔의 정점, VIP 룸입니다. 압도적인 파노라마 뷰, 전용 자쿠지, 100인치 시네마 룸, 그리고 24시간 버틀러 서비스가 제공됩니다.",
+                amenities: ["🏆 Private Pool", "🍾 Champagne", "🤵 Butler", "🎬 Cinema"],
+                price: { week: 1000000, friSun: 1200000, sat: 1500000 }
+            }
+        };
+
+        let currentRoom = 'standard'; 
+        let currentDate = new Date();
+        let selectedDate = new Date();
+
+        // 방 변경 함수 (페이지 이동 안함!)
+        function switchRoom(roomKey) {
+            currentRoom = roomKey;
+            const data = roomDB[roomKey];
+
+            // 정보 업데이트
+            document.getElementById('rBadge').innerText = data.badge;
+            document.getElementById('rBadge').className = `room-badge ${data.badgeClass}`;
+            document.getElementById('rTitle').innerText = data.title;
+            document.getElementById('rSubtitle').innerText = data.subtitle;
+            
+            const img = document.getElementById('rImg');
+            img.style.opacity = 0; 
+            setTimeout(() => { img.src = data.img; img.style.opacity = 1; }, 200);
+
+            document.getElementById('rDesc').innerText = data.desc;
+
+            // 어메니티 다시 그리기
+            const amGrid = document.getElementById('rAmenities');
+            amGrid.innerHTML = "";
+            data.amenities.forEach(am => {
+                amGrid.innerHTML += `<div class="amenity-item"><span>${am.split(' ')[0]}</span>${am.substring(3)}</div>`;
+            });
+
+            // 카드 스타일 변경
+            document.querySelectorAll('.room-card').forEach(c => c.classList.remove('active'));
+            document.getElementById(`card-${roomKey}`).classList.add('active');
+
+            // 가격 재계산
+            updatePrice(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate());
+        }
+
+        // 달력 및 가격 계산 로직 (기존과 동일)
+        const calendarDays = document.getElementById('calendarDays');
+        const currentMonthEl = document.getElementById('currentMonth');
+        const priceDisplay = document.getElementById('priceDisplay');
+        const priceDetail = document.getElementById('priceDetail');
+
+        function renderCalendar() {
+            const year = currentDate.getFullYear();
+            const month = currentDate.getMonth();
+            currentMonthEl.innerText = `${year}.${month + 1}`;
+
+            const firstDay = new Date(year, month, 1).getDay();
+            const lastDate = new Date(year, month + 1, 0).getDate();
+
+            calendarDays.innerHTML = "";
+
+            for(let i=0; i<firstDay; i++) calendarDays.innerHTML += `<div class="day empty"></div>`;
+
+            for(let d=1; d<=lastDate; d++) {
+                const dayEl = document.createElement('div');
+                dayEl.innerText = d;
+                dayEl.className = 'day';
+                
+                if(year === selectedDate.getFullYear() && month === selectedDate.getMonth() && d === selectedDate.getDate()) {
+                    dayEl.classList.add('selected');
+                    updatePrice(year, month, d);
+                }
+
+                dayEl.addEventListener('click', () => {
+                    selectedDate = new Date(year, month, d);
+                    renderCalendar();
+                });
+                calendarDays.appendChild(dayEl);
+            }
+        }
+
+        function changeMonth(delta) {
+            currentDate.setMonth(currentDate.getMonth() + delta);
+            renderCalendar();
+        }
+
+        function updatePrice(year, month, day) {
+            const checkDate = new Date(year, month, day);
+            const dayOfWeek = checkDate.getDay();
+            const prices = roomDB[currentRoom].price;
+
+            let finalPrice = prices.week;
+            let msg = "평일 기본 요금";
+
+            if (dayOfWeek === 6) { finalPrice = prices.sat; msg = "🔥 토요일 피크 요금"; }
+            else if (dayOfWeek === 5 || dayOfWeek === 0) { finalPrice = prices.friSun; msg = "✨ 금/일 특별 요금"; }
+
+            priceDisplay.innerText = "₩" + finalPrice.toLocaleString();
+            priceDisplay.style.color = (dayOfWeek === 6) ? "#ff1e1e" : "white";
+            priceDetail.innerText = msg;
+        }
+
+        function goToReservation() {
+            const dateStr = selectedDate.toISOString().split('T')[0];
+            // [한국어 예약 페이지로 이동]
+            location.href = `reservation.html?date=${dateStr}&room=${currentRoom}`;
+        }
+
+        switchRoom('standard'); // 처음엔 스탠다드
+        renderCalendar();
+    </script>
+</body>
+</html>

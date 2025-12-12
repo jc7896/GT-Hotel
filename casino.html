@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GT CASINO - High Stakes</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎰</text></svg>">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Noto+Sans+KR:wght@300;500&display=swap" rel="stylesheet">
+    <style>
+        body { background: #111; color: #fff; font-family: 'Noto Sans KR', sans-serif; text-align: center; height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; margin: 0; overflow: hidden; position: relative; }
+        .logo { font-family: 'Orbitron'; font-size: 2.5rem; color: #d4af37; margin-bottom: 30px; letter-spacing: 3px; text-shadow: 0 0 10px #d4af37; }
+        
+        .slot-machine {
+            background: #222; padding: 40px; border-radius: 20px;
+            border: 4px solid #d4af37; box-shadow: 0 0 50px rgba(212, 175, 55, 0.3);
+            max-width: 500px; width: 90%; position: relative; z-index: 10;
+        }
+        
+        .window {
+            display: flex; gap: 10px; background: #000; padding: 20px;
+            border-radius: 10px; border: 2px solid #555; margin-bottom: 30px;
+            justify-content: center;
+        }
+        
+        .reel {
+            font-size: 4rem; width: 80px; height: 100px; background: #fff;
+            color: #000; border-radius: 5px; display: flex; justify-content: center; align-items: center;
+            font-family: 'Apple Color Emoji', 'Segoe UI Emoji', sans-serif;
+            transition: all 0.1s;
+        }
+        
+        .reel.spinning { filter: blur(4px); transform: scale(0.95); background: #e0e0e0; }
+        .reel.stop { animation: bounceStop 0.4s ease-out; }
+
+        @keyframes bounceStop {
+            0% { transform: translateY(-20px); }
+            40% { transform: translateY(10px); }
+            100% { transform: translateY(0); }
+        }
+
+        .spin-btn {
+            background: #d9534f; color: white; border: none; padding: 15px 50px;
+            font-family: 'Orbitron'; font-size: 1.5rem; border-radius: 50px;
+            cursor: pointer; box-shadow: 0 5px 0 #c9302c; transition: 0.1s;
+        }
+        .spin-btn:active { transform: translateY(5px); box-shadow: 0 0 0 #c9302c; }
+        .spin-btn:disabled { background: #555; box-shadow: none; cursor: not-allowed; color: #888; }
+
+        .msg { margin-top: 20px; height: 30px; color: #d4af37; font-weight: bold; font-size: 1.2rem; }
+        .back-link { margin-top: 30px; color: #666; text-decoration: none; font-size: 0.9rem; z-index: 10; }
+        .back-link:hover { color: #fff; }
+
+        .win-flash {
+            position: absolute; inset: 0; background: radial-gradient(circle, rgba(255,215,0,0.4) 0%, rgba(0,0,0,0) 70%);
+            animation: flash 0.5s infinite alternate; pointer-events: none; display: none; z-index: 1;
+        }
+        @keyframes flash { from { opacity: 0.2; } to { opacity: 1; } }
+
+        .coin {
+            position: fixed; top: -50px; font-size: 2rem; animation: drop 3s linear forwards;
+            z-index: 5;
+        }
+        @keyframes drop { to { transform: translateY(110vh) rotate(360deg); } }
+
+        /* [잭팟 모달 스타일] */
+        .jackpot-modal {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85); z-index: 9999; display: none;
+            justify-content: center; align-items: center; flex-direction: column;
+            animation: fadeIn 0.5s;
+        }
+        .jackpot-content {
+            background: linear-gradient(135deg, #1a1a1a, #2c0000);
+            padding: 40px; border-radius: 20px; border: 3px solid #ffd700;
+            text-align: center; box-shadow: 0 0 50px #ff0000;
+            transform: scale(0.8); animation: popIn 0.5s forwards;
+        }
+        .jackpot-title { font-family: 'Orbitron'; font-size: 3rem; color: #ffd700; margin-bottom: 10px; text-shadow: 0 0 20px gold; }
+        .jackpot-desc { font-size: 1.2rem; margin-bottom: 30px; line-height: 1.6; }
+        .claim-btn {
+            background: #ffd700; color: #000; border: none; padding: 15px 30px;
+            font-size: 1.2rem; font-weight: bold; border-radius: 50px; cursor: pointer;
+            font-family: 'Orbitron'; box-shadow: 0 5px 15px rgba(255, 215, 0, 0.5);
+            transition: 0.2s; text-decoration: none; display: inline-block;
+        }
+        .claim-btn:hover { transform: scale(1.1); background: #ffed4a; }
+
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes popIn { to { transform: scale(1); } }
+    </style>
+</head>
+<body>
+    <div class="win-flash" id="winFlash"></div>
+    
+    <div class="jackpot-modal" id="jackpotModal">
+        <div class="jackpot-content">
+            <div class="jackpot-title">JACKPOT!</div>
+            <div class="jackpot-desc">
+                축하합니다! 777 잭팟이 터졌습니다!<br>
+                <span style="color:#ff4d4d; font-weight:bold;">스위트룸 업그레이드 코드</span>가 발급되었습니다.
+            </div>
+            <a href="reservation.html?code=GT-JACKPOT-777" class="claim-btn">🎁 코드 받고 예약하기</a>
+        </div>
+    </div>
+
+    <div class="logo">GT CASINO</div>
+    
+    <div class="slot-machine" id="machine">
+        <div class="window">
+            <div class="reel" id="reel0">7️⃣</div>
+            <div class="reel" id="reel1">7️⃣</div>
+            <div class="reel" id="reel2">7️⃣</div>
+        </div>
+        <button class="spin-btn" onclick="startGame()">SPIN</button>
+        <div class="msg" id="msg">Press SPIN to Win!</div>
+    </div>
+
+    <a href="index.html" class="back-link">← 메인으로 돌아가기</a>
+
+    <script>
+        const symbols = ['🍒', '🍋', '🍇', '💎', '7️⃣', '🔔'];
+        const reels = [document.getElementById('reel0'), document.getElementById('reel1'), document.getElementById('reel2')];
+        const msg = document.getElementById('msg');
+        const btn = document.querySelector('.spin-btn');
+        const machine = document.getElementById('machine');
+        const flash = document.getElementById('winFlash');
+        const modal = document.getElementById('jackpotModal');
+        
+        let intervals = [null, null, null]; 
+
+        function startGame() {
+            if(btn.disabled) return;
+            
+            btn.disabled = true;
+            flash.style.display = 'none';
+            msg.innerText = "Spinning...";
+            msg.style.color = "#fff";
+
+            reels.forEach((reel, index) => {
+                reel.classList.remove('stop');
+                reel.classList.add('spinning');
+                intervals[index] = setInterval(() => {
+                    reel.innerText = symbols[Math.floor(Math.random() * symbols.length)];
+                }, 80);
+            });
+
+            setTimeout(() => stopReel(0), 1500);
+            setTimeout(() => stopReel(1), 2200);
+            setTimeout(() => {
+                stopReel(2);
+                checkResult();
+            }, 3000);
+        }
+
+        function stopReel(index) {
+            clearInterval(intervals[index]); 
+            const reel = reels[index];
+            const finalSymbol = symbols[Math.floor(Math.random() * symbols.length)];
+            reel.innerText = finalSymbol;
+            reel.classList.remove('spinning');
+            reel.classList.add('stop');
+        }
+
+        function checkResult() {
+            const r0 = reels[0].innerText;
+            const r1 = reels[1].innerText;
+            const r2 = reels[2].innerText;
+
+            if (r0 === r1 && r1 === r2) {
+                // JACKPOT
+                msg.innerHTML = `JACKPOT! 🎉`;
+                msg.style.color = "#ff4d4d";
+                flash.style.display = 'block';
+                dropCoins();
+                
+                // 1초 뒤에 축하 팝업 띄우기
+                setTimeout(() => {
+                    modal.style.display = 'flex';
+                }, 1000);
+
+            } else if (r0 === r1 || r1 === r2 || r0 === r2) {
+                msg.innerText = "So Close! Try Again!";
+                msg.style.color = "#ffd700";
+            } else {
+                msg.innerText = "Bad Luck... One more?";
+                msg.style.color = "#888";
+            }
+            btn.disabled = false;
+        }
+
+        function dropCoins() {
+            for(let i=0; i<50; i++) {
+                setTimeout(() => {
+                    const coin = document.createElement('div');
+                    coin.classList.add('coin');
+                    coin.innerText = Math.random() > 0.5 ? '💰' : '💎';
+                    coin.style.left = Math.random() * 90 + 'vw';
+                    coin.style.animationDuration = Math.random() * 1 + 1 + 's';
+                    document.body.appendChild(coin);
+                    setTimeout(() => coin.remove(), 2000);
+                }, i * 100);
+            }
+        }
+    </script>
+</body>
+</html>

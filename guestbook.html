@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GT Guestbook</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;500;700&family=Orbitron:wght@700&display=swap" rel="stylesheet">
+    
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+
+    <style>
+        /* [스타일] 어두운 호텔 테마 적용 */
+        body { 
+            background: #0f0f0f; color: white; 
+            font-family: 'Noto Sans KR', sans-serif; 
+            padding: 40px 20px; 
+            max-width: 600px; margin: 0 auto; 
+        }
+        
+        h1 { 
+            font-family: 'Orbitron'; text-align: center; 
+            color: #d4af37; margin-bottom: 40px; letter-spacing: 2px;
+        }
+        
+        /* 입력창 스타일 */
+        .input-box { 
+            background: #1a1a1a; padding: 25px; 
+            border-radius: 15px; margin-bottom: 40px; 
+            border: 1px solid #333; box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+        
+        input, textarea { 
+            width: 100%; background: #222; border: 1px solid #444; 
+            color: white; padding: 12px; margin-bottom: 15px; 
+            border-radius: 8px; font-size: 16px; font-family: 'Noto Sans KR';
+        }
+        input:focus, textarea:focus { outline: none; border-color: #d4af37; }
+        
+        button { 
+            width: 100%; background: #d4af37; border: none; 
+            padding: 15px; font-weight: bold; font-size: 16px;
+            cursor: pointer; border-radius: 8px; transition: 0.2s; 
+            color: #0f0f0f; font-family: 'Orbitron';
+        }
+        button:hover { background: #fff; transform: translateY(-2px); }
+
+        /* 메시지 리스트 스타일 */
+        .messages { display: flex; flex-direction: column; gap: 15px; }
+        
+        .msg-card { 
+            background: #1a1a1a; padding: 20px; border-radius: 10px; 
+            border-left: 4px solid #ff1e1e; 
+            animation: fadeIn 0.5s ease-out; 
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        
+        .msg-header { display: flex; justify-content: space-between; margin-bottom: 8px; }
+        .msg-name { font-weight: bold; color: #d4af37; font-size: 1.1rem; }
+        .msg-time { font-size: 0.8rem; color: #666; }
+        .msg-text { color: #ddd; font-size: 1rem; line-height: 1.5; white-space: pre-wrap; }
+        
+        @keyframes fadeIn { 
+            from { opacity: 0; transform: translateY(20px); } 
+            to { opacity: 1; transform: translateY(0); } 
+        }
+        
+        .back-link { 
+            display: block; text-align: center; margin-top: 50px; 
+            color: #666; text-decoration: none; transition: 0.3s;
+        }
+        .back-link:hover { color: #fff; }
+    </style>
+</head>
+<body>
+    <h1>GT GUESTBOOK</h1>
+
+    <div class="input-box">
+        <input type="text" id="name" placeholder="이름 (Nickname)" maxlength="10">
+        <textarea id="message" rows="3" placeholder="GT 호텔에서의 추억을 남겨주세요..." maxlength="100"></textarea>
+        <button onclick="writeMessage()">POST MESSAGE</button>
+    </div>
+
+    <div class="messages" id="messageList">
+        </div>
+
+    <a href="index.html" class="back-link">← 메인으로 돌아가기</a>
+
+    <script>
+        // [선생님의 Firebase 키 적용 완료]
+        const firebaseConfig = {
+            apiKey: "AIzaSyCKZVHYvvy12FrtA7HW6GiRfjFfuBSZuaA",
+            authDomain: "gt-hotel-game.firebaseapp.com",
+            databaseURL: "https://gt-hotel-game-default-rtdb.firebaseio.com",
+            projectId: "gt-hotel-game",
+            storageBucket: "gt-hotel-game.firebasestorage.app",
+            messagingSenderId: "433964901980",
+            appId: "1:433964901980:web:1dafdb1a3c98b648b7a899",
+            measurementId: "G-1WN8DYCXKC"
+        };
+
+        // Firebase 시작
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database().ref('guestbook');
+
+        // 1. 글 쓰기 함수
+        function writeMessage() {
+            const name = document.getElementById('name').value;
+            const msg = document.getElementById('message').value;
+
+            if(name && msg) {
+                // 현재 시간 구하기
+                const now = new Date();
+                const timeString = now.toLocaleDateString() + " " + now.toLocaleTimeString();
+
+                // DB에 저장
+                db.push({
+                    name: name,
+                    message: msg,
+                    date: timeString,
+                    timestamp: firebase.database.ServerValue.TIMESTAMP
+                });
+
+                // 입력창 비우기
+                document.getElementById('message').value = "";
+                alert("방명록이 등록되었습니다!");
+            } else {
+                alert("이름과 내용을 모두 입력해주세요!");
+            }
+        }
+
+        // 2. 글 불러오기 (실시간 감지)
+        db.on('child_added', (snapshot) => {
+            const data = snapshot.val();
+            
+            // HTML 카드 만들기
+            const card = document.createElement('div');
+            card.className = 'msg-card';
+            card.innerHTML = `
+                <div class="msg-header">
+                    <span class="msg-name">${escapeHtml(data.name)}</span>
+                    <span class="msg-time">${data.date || 'Just now'}</span>
+                </div>
+                <div class="msg-text">${escapeHtml(data.message)}</div>
+            `;
+            
+            // 최신 글이 맨 위로 오게 추가
+            const list = document.getElementById('messageList');
+            list.insertBefore(card, list.firstChild);
+        });
+
+        // 보안을 위한 HTML 태그 무시 함수
+        function escapeHtml(text) {
+            if (!text) return text;
+            return text
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+    </script>
+</body>
+</html>

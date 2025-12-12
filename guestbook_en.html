@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GT Guestbook</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;500;700&family=Orbitron:wght@700&display=swap" rel="stylesheet">
+    
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+
+    <style>
+        /* CSS는 기존과 동일합니다 */
+        body { 
+            background: #0f0f0f; color: white; 
+            font-family: 'Noto Sans KR', sans-serif; 
+            padding: 40px 20px; 
+            max-width: 600px; margin: 0 auto; 
+        }
+        
+        h1 { 
+            font-family: 'Orbitron'; text-align: center; 
+            color: #d4af37; margin-bottom: 40px; letter-spacing: 2px;
+        }
+        
+        .input-box { 
+            background: #1a1a1a; padding: 25px; 
+            border-radius: 15px; margin-bottom: 40px; 
+            border: 1px solid #333; box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+        
+        input, textarea { 
+            width: 100%; background: #222; border: 1px solid #444; 
+            color: white; padding: 12px; margin-bottom: 15px; 
+            border-radius: 8px; font-size: 16px; font-family: 'Noto Sans KR';
+        }
+        input:focus, textarea:focus { outline: none; border-color: #d4af37; }
+        
+        button { 
+            width: 100%; background: #d4af37; border: none; 
+            padding: 15px; font-weight: bold; font-size: 16px;
+            cursor: pointer; border-radius: 8px; transition: 0.2s; 
+            color: #0f0f0f; font-family: 'Orbitron';
+        }
+        button:hover { background: #fff; transform: translateY(-2px); }
+
+        .messages { display: flex; flex-direction: column; gap: 15px; }
+        
+        .msg-card { 
+            background: #1a1a1a; padding: 20px; border-radius: 10px; 
+            border-left: 4px solid #ff1e1e; 
+            animation: fadeIn 0.5s ease-out; 
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        
+        .msg-header { display: flex; justify-content: space-between; margin-bottom: 8px; }
+        .msg-name { font-weight: bold; color: #d4af37; font-size: 1.1rem; }
+        .msg-time { font-size: 0.8rem; color: #666; }
+        .msg-text { color: #ddd; font-size: 1rem; line-height: 1.5; white-space: pre-wrap; }
+        
+        @keyframes fadeIn { 
+            from { opacity: 0; transform: translateY(20px); } 
+            to { opacity: 1; transform: translateY(0); } 
+        }
+        
+        .back-link { 
+            display: block; text-align: center; margin-top: 50px; 
+            color: #666; text-decoration: none; transition: 0.3s;
+        }
+        .back-link:hover { color: #fff; }
+    </style>
+</head>
+<body>
+    <h1>GT GUESTBOOK</h1>
+
+    <div class="input-box">
+        <input type="text" id="name" placeholder="Name (Nickname)" maxlength="10">
+        <textarea id="message" rows="3" placeholder="Leave a message about your stay..." maxlength="100"></textarea>
+        <button onclick="writeMessage()">POST MESSAGE</button>
+    </div>
+
+    <div class="messages" id="messageList">
+        </div>
+
+    <a href="index_en.html" class="back-link">← Back to Lobby</a>
+
+    <script>
+        // Firebase Config
+        const firebaseConfig = {
+            apiKey: "AIzaSyCKZVHYvvy12FrtA7HW6GiRfjFfuBSZuaA",
+            authDomain: "gt-hotel-game.firebaseapp.com",
+            databaseURL: "https://gt-hotel-game-default-rtdb.firebaseio.com",
+            projectId: "gt-hotel-game",
+            storageBucket: "gt-hotel-game.firebasestorage.app",
+            messagingSenderId: "433964901980",
+            appId: "1:433964901980:web:1dafdb1a3c98b648b7a899",
+            measurementId: "G-1WN8DYCXKC"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database().ref('guestbook');
+
+        function writeMessage() {
+            const name = document.getElementById('name').value;
+            const msg = document.getElementById('message').value;
+
+            if(name && msg) {
+                const now = new Date();
+                const timeString = now.toLocaleDateString() + " " + now.toLocaleTimeString();
+
+                db.push({
+                    name: name,
+                    message: msg,
+                    date: timeString,
+                    timestamp: firebase.database.ServerValue.TIMESTAMP
+                });
+
+                document.getElementById('message').value = "";
+                // [수정됨] 영어 알림
+                alert("Message Posted Successfully!");
+            } else {
+                // [수정됨] 영어 알림
+                alert("Please enter both Name and Message.");
+            }
+        }
+
+        db.on('child_added', (snapshot) => {
+            const data = snapshot.val();
+            
+            const card = document.createElement('div');
+            card.className = 'msg-card';
+            card.innerHTML = `
+                <div class="msg-header">
+                    <span class="msg-name">${escapeHtml(data.name)}</span>
+                    <span class="msg-time">${data.date || 'Just now'}</span>
+                </div>
+                <div class="msg-text">${escapeHtml(data.message)}</div>
+            `;
+            
+            const list = document.getElementById('messageList');
+            list.insertBefore(card, list.firstChild);
+        });
+
+        function escapeHtml(text) {
+            if (!text) return text;
+            return text
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+    </script>
+</body>
+</html>

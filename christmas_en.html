@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Christmas: The Warmth of Winter</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&family=Noto+Sans:wght@300;400;500;700&family=Song+Myung&display=swap" rel="stylesheet">
+    
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+
+    <style>
+        /* CSS Same as Korean version */
+        :root { --bg-color: #FdfcF8; --text-main: #2C2C2C; --text-light: #555; --accent-color: #2F4F4F; --gold-color: #D4AF37; --danger-color: #C0392B; }
+        * { margin: 0; padding: 0; box-sizing: border-box; user-select: none; -webkit-user-select: none; }
+        html { scroll-behavior: smooth; }
+        body { font-family: 'Noto Sans', sans-serif; background-color: var(--bg-color); color: var(--text-main); line-height: 1.8; overflow-x: hidden; position: relative; }
+        h1, h2, h3, h4 { font-family: 'Song Myung', serif; font-weight: 400; }
+        img { max-width: 100%; display: block; background-color: #eee; }
+
+        .snowflake { position: fixed; top: -10px; color: #ddd; font-size: 1em; font-family: Arial; text-shadow: 0 0 1px #000; z-index: 9999; pointer-events: none; animation: fall linear forwards; }
+        @keyframes fall { to { transform: translateY(105vh); } }
+
+        nav { position: fixed; top: 0; left: 0; width: 100%; padding: 15px 5%; background-color: rgba(255, 255, 255, 0.9); display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 15px rgba(0,0,0,0.05); z-index: 1000; backdrop-filter: blur(8px); transition: all 0.3s; }
+        /* 로고 링크 수정됨 */
+        .nav-logo { font-family: 'Cinzel Decorative', cursive; font-size: 1.5rem; color: var(--accent-color); text-decoration: none; font-weight: 700; }
+        .nav-links { display: flex; gap: 25px; }
+        .nav-links a { text-decoration: none; color: var(--text-main); font-weight: 500; font-size: 0.95rem; transition: color 0.3s ease; position: relative; }
+        .nav-links a:hover { color: var(--gold-color); }
+
+        header { height: 100vh; background: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.5)), url('https://images.pexels.com/photos/3334477/pexels-photo-3334477.jpeg?auto=compress&cs=tinysrgb&w=1920') no-repeat center center/cover; background-attachment: fixed; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; color: #fff; padding: 20px; }
+        header h1 { font-size: 3.5rem; margin-bottom: 20px; text-shadow: 0 4px 10px rgba(0,0,0,0.5); font-family: 'Cinzel Decorative', cursive; }
+        header p { font-size: 1.2rem; font-weight: 300; opacity: 0.9; max-width: 600px; line-height: 1.6; margin-bottom: 40px; text-shadow: 0 2px 5px rgba(0,0,0,0.5); }
+        .scroll-down { font-size: 0.9rem; opacity: 0.8; letter-spacing: 2px; text-transform: uppercase; color: #fff; cursor: pointer; animation: bounce 2s infinite; }
+        @keyframes bounce { 0%, 20%, 50%, 80%, 100% {transform: translateY(0);} 40% {transform: translateY(-10px);} 60% {transform: translateY(-5px);} }
+
+        section { padding: 100px 5%; max-width: 1200px; margin: 0 auto; }
+        .section-title { text-align: center; font-size: 2.5rem; margin-bottom: 60px; color: var(--accent-color); font-weight: 600; }
+        
+        .origin-content { display: flex; align-items: center; gap: 50px; }
+        .origin-text { flex: 1; font-size: 1.1rem; color: var(--text-light); text-align: justify; }
+        .origin-img { flex: 1; border-radius: 15px; overflow: hidden; box-shadow: 0 15px 30px rgba(0,0,0,0.1); }
+        .mindset-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 30px; }
+        .mindset-card { padding: 40px 30px; background-color: #fff; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); text-align: center; transition: transform 0.3s; border-top: 4px solid var(--gold-color); }
+        .mindset-card:hover { transform: translateY(-10px); }
+
+        #mini-game { background-color: #eef2f3; border-radius: 20px; margin-bottom: 100px; padding: 60px 20px; text-align: center; }
+        .game-wrapper { max-width: 800px; width: 100%; margin: 0 auto; position: relative; }
+        .game-header { display: flex; justify-content: space-between; margin-bottom: 15px; font-weight: 700; color: var(--text-main); font-size: 1.2rem; }
+        .highscore-box { color: var(--gold-color); text-shadow: 1px 1px 0 rgba(0,0,0,0.1); display: flex; align-items: center; gap: 5px; }
+        .server-badge { background: var(--danger-color); color: white; font-size: 0.7rem; padding: 2px 6px; border-radius: 4px; }
+
+        .game-screen { width: 100%; height: 60vh; max-height: 600px; min-height: 400px; background: linear-gradient(to bottom, #1a2a3a, #2c3e50); border-radius: 15px; position: relative; overflow: hidden; box-shadow: 0 10px 40px rgba(0,0,0,0.3); cursor: pointer; }
+        #player { position: absolute; bottom: 20px; left: 50%; font-size: 4rem; z-index: 10; transition: transform 0.1s ease-out; transform-origin: bottom center; }
+        .item { position: absolute; font-size: 2.5rem; z-index: 5; will-change: top; }
+        .particle { position: absolute; width: 6px; height: 6px; border-radius: 50%; pointer-events: none; animation: pop 0.6s ease-out forwards; }
+        @keyframes pop { 0% { transform: translate(0, 0) scale(1); opacity: 1; } 100% { transform: translate(var(--mx), var(--my)) scale(0); opacity: 0; } }
+        .shake-screen { animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both; }
+        @keyframes shake { 10%, 90% { transform: translate3d(-2px, 0, 0); } 20%, 80% { transform: translate3d(4px, 0, 0); } 30%, 50%, 70% { transform: translate3d(-6px, 0, 0); } 40%, 60% { transform: translate3d(6px, 0, 0); } }
+
+        .game-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.85); display: flex; flex-direction: column; justify-content: center; align-items: center; color: #fff; z-index: 20; text-align: center; backdrop-filter: blur(3px); }
+        .btn-game { padding: 15px 40px; background: var(--accent-color); color: #fff; border: none; border-radius: 30px; font-size: 1.3rem; cursor: pointer; transition: 0.2s; margin-top: 15px; font-weight: bold; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
+        .btn-game:hover { background: #1e3333; transform: scale(1.05); }
+        .btn-game:active { transform: scale(0.95); }
+        .btn-reward { background: var(--gold-color); color: #fff; box-shadow: 0 0 20px var(--gold-color); animation: pulse-btn 1.5s infinite; }
+        @keyframes pulse-btn { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
+
+        .mobile-controls { display: none; justify-content: center; gap: 80px; margin-top: 30px; }
+        .control-btn { width: 90px; height: 90px; border-radius: 50%; background: rgba(255,255,255,0.9); border: 4px solid var(--accent-color); font-size: 2.5rem; display: flex; justify-content: center; align-items: center; cursor: pointer; color: var(--accent-color); box-shadow: 0 8px 20px rgba(0,0,0,0.15); transition: 0.1s; }
+        .control-btn:active { background: var(--accent-color); color: #fff; transform: scale(0.9); }
+
+        .culture-gallery { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
+        .culture-item { position: relative; height: 350px; border-radius: 15px; overflow: hidden; cursor: pointer; }
+        .culture-item img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s; }
+        .culture-item:hover img { transform: scale(1.1); }
+        .culture-info { position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,0.9), transparent); color: #fff; display: flex; flex-direction: column; justify-content: flex-end; padding: 25px; opacity: 0; transition: opacity 0.3s; }
+        .culture-item:hover .culture-info { opacity: 1; }
+        
+        footer { background-color: var(--accent-color); color: rgba(255,255,255,0.7); text-align: center; padding: 40px 20px; font-size: 0.9rem; }
+
+        @media (max-width: 768px) {
+            header h1 { font-size: 2.5rem; }
+            .nav-links { display: none; } 
+            nav { justify-content: center; }
+            .origin-content { flex-direction: column; }
+            .mobile-controls { display: flex; } 
+            section { padding: 60px 20px; }
+            .game-screen { height: 50vh; min-height: 400px; }
+        }
+    </style>
+</head>
+<body>
+
+    <nav>
+        <a href="christmas_en.html" class="nav-logo">GT HOTEL</a>
+        <div class="nav-links">
+            <a href="#origin">Origin</a>
+            <a href="#mindset">Mindset</a>
+            <a href="#mini-game">Game</a>
+            <a href="#culture">Stories</a>
+        </div>
+    </nav>
+
+    <header>
+        <h1>Christmas Essence</h1>
+        <p>Beyond the glitz, we share the true meaning<br>and warm stories from around the world.</p>
+        <div class="scroll-down" onclick="document.getElementById('origin').scrollIntoView();">Scroll</div>
+    </header>
+
+    <section id="origin">
+        <h2 class="section-title">The Origin</h2>
+        <div class="origin-content">
+            <div class="origin-img">
+                <img src="https://images.pexels.com/photos/1303098/pexels-photo-1303098.jpeg?auto=compress&cs=tinysrgb&w=800" alt="Candle">
+            </div>
+            <div class="origin-text">
+                <p>
+                    Christmas is a festival embodying humanity's long-held wish for light amidst darkness.<br><br>
+                    Ancient Roman solstice festivals and the Nordic Yule combined the message <strong>'The longest night passes, and light returns'</strong> with the birth of baby Jesus to become today's Christmas.<br><br>
+                    Sharing warmth in the coldest season and preparing for the coming spring—that is the true beginning of Christmas.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <section id="mindset">
+        <h2 class="section-title">Mindset</h2>
+        <div class="mindset-grid">
+            <div class="mindset-card">
+                <h3>Gratitude</h3>
+                <p>A time to express sincere gratitude to loved ones we often overlook in our busy daily lives.</p>
+            </div>
+            <div class="mindset-card">
+                <h3>Sharing</h3>
+                <p>We reflect on the spirit of sharing—giving our abundance to neighbors and paying attention to those in need.</p>
+            </div>
+            <div class="mindset-card">
+                <h3>Hope & Peace</h3>
+                <p>A moment to put aside busyness, find inner peace, and embrace hope for the coming new year.</p>
+            </div>
+        </div>
+    </section>
+
+    <section id="mini-game">
+        <h2 class="section-title">Santa's Challenge</h2>
+        <div class="game-wrapper">
+            <div class="game-header">
+                <span class="highscore-box">
+                    <span class="server-badge">WORLD BEST</span>
+                    🏆 <span id="high-score">...</span>
+                </span>
+                <span class="score-box">🎁 Score: <span id="score">0</span> / 50</span>
+                <span class="life-box">❤️ Life: <span id="lives">3</span></span>
+            </div>
+            
+            <div class="game-screen" id="game-screen">
+                <div id="player">🎅</div>
+                
+                <div class="game-overlay" id="start-overlay">
+                    <h3>Physics Update!</h3>
+                    <p>Improved controls!<br>Collect 50 gifts to unlock!</p>
+                    <button class="btn-game" onclick="startGame()">START GAME</button>
+                </div>
+                
+                <div class="game-overlay" id="gameover-overlay" style="display: none;">
+                    <h3 id="result-title">Game Over</h3>
+                    <p id="result-msg">Score: 0</p>
+                    <button id="btn-coupon" class="btn-game btn-reward" style="display: none;" onclick="goToReservation()">🎉 Get Coupon & Book</button>
+                    <button class="btn-game" onclick="startGame()">Try Again</button>
+                </div>
+            </div>
+
+            <div class="mobile-controls">
+                <div class="control-btn" id="btn-left">◀</div>
+                <div class="control-btn" id="btn-right">▶</div>
+            </div>
+        </div>
+    </section>
+
+    <section id="culture">
+        <h2 class="section-title">Global Stories</h2>
+        <div class="culture-gallery">
+            <div class="culture-item">
+                <img src="https://images.pexels.com/photos/1303082/pexels-photo-1303082.jpeg?auto=compress&cs=tinysrgb&w=800" alt="Germany">
+                <div class="culture-info">
+                    <h4>Germany</h4>
+                    <p>The birthplace of Christmas markets. Enjoying warm Glühwein and festive vibes in the squares.</p>
+                </div>
+            </div>
+            
+            <a href="christmas_jp.html" class="culture-item" style="display: block;">
+                <img src="https://images.pexels.com/photos/1661906/pexels-photo-1661906.jpeg?auto=compress&cs=tinysrgb&w=800" alt="Japan Christmas Tree">
+                <div class="culture-info">
+                    <h4>Japan</h4>
+                    <p>Dazzling city illuminations and Christmas cakes. A romantic night for couples.</p>
+                </div>
+            </a>
+
+            <div class="culture-item">
+                <img src="https://images.pexels.com/photos/19179973/pexels-photo-19179973.jpeg?auto=compress&cs=tinysrgb&w=800" alt="Australia">
+                <div class="culture-info">
+                    <h4>Australia</h4>
+                    <p>A midsummer Christmas! Beach BBQ parties and surfing make for a unique celebration.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <p>&copy; 2025 GT HOTEL. All rights reserved.</p>
+    </footer>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyCKZVHYvvy12FrtA7HW6GiRfjFfuBSZuaA",
+            authDomain: "gt-hotel-game.firebaseapp.com",
+            databaseURL: "https://gt-hotel-game-default-rtdb.firebaseio.com",
+            projectId: "gt-hotel-game",
+            storageBucket: "gt-hotel-game.firebasestorage.app",
+            messagingSenderId: "433964901980",
+            appId: "1:433964901980:web:1dafdb1a3c98b648b7a899",
+            measurementId: "G-1WN8DYCXKC"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+        const highScoreRef = database.ref('highScore');
+
+        function createSnowflake() {
+            const snow = document.createElement('div');
+            snow.classList.add('snowflake');
+            snow.innerHTML = '❄';
+            snow.style.left = Math.random() * 100 + 'vw';
+            snow.style.animationDuration = Math.random() * 3 + 2 + 's'; 
+            snow.style.opacity = Math.random();
+            snow.style.fontSize = Math.random() * 10 + 10 + 'px';
+            document.body.appendChild(snow);
+            setTimeout(() => { snow.remove(); }, 5000);
+        }
+        setInterval(createSnowflake, 100);
+
+        // --- Game Logic ---
+        const gameScreen = document.getElementById('game-screen');
+        const player = document.getElementById('player');
+        const scoreEl = document.getElementById('score');
+        const livesEl = document.getElementById('lives');
+        const highScoreEl = document.getElementById('high-score'); 
+        const startOverlay = document.getElementById('start-overlay');
+        const gameoverOverlay = document.getElementById('gameover-overlay');
+        const resultTitle = document.getElementById('result-title');
+        const resultMsg = document.getElementById('result-msg');
+        const btnCoupon = document.getElementById('btn-coupon');
+
+        let playerX = 50;
+        let velocity = 0;
+        let acceleration = 1.5; 
+        let friction = 0.82;    
+        let maxSpeed = 3.0;     
+
+        let isGameRunning = false;
+        let score = 0;
+        let serverHighScore = 0;
+        let lives = 3;
+        let gameLoop;
+        let spawnTimer;
+        let items = [];
+        let gameSpeed = 3;
+
+        let keyLeft = false;
+        let keyRight = false;
+
+        highScoreRef.on('value', (snapshot) => {
+            serverHighScore = snapshot.val() || 0;
+            highScoreEl.textContent = serverHighScore;
+        });
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowLeft') keyLeft = true;
+            if (e.key === 'ArrowRight') keyRight = true;
+        });
+        document.addEventListener('keyup', (e) => {
+            if (e.key === 'ArrowLeft') keyLeft = false;
+            if (e.key === 'ArrowRight') keyRight = false;
+        });
+
+        const btnLeft = document.getElementById('btn-left');
+        const btnRight = document.getElementById('btn-right');
+
+        btnLeft.addEventListener('mousedown', () => keyLeft = true);
+        btnLeft.addEventListener('mouseup', () => keyLeft = false);
+        btnLeft.addEventListener('touchstart', (e) => { e.preventDefault(); keyLeft = true; });
+        btnLeft.addEventListener('touchend', (e) => { e.preventDefault(); keyLeft = false; });
+
+        btnRight.addEventListener('mousedown', () => keyRight = true);
+        btnRight.addEventListener('mouseup', () => keyRight = false);
+        btnRight.addEventListener('touchstart', (e) => { e.preventDefault(); keyRight = true; });
+        btnRight.addEventListener('touchend', (e) => { e.preventDefault(); keyRight = false; });
+
+        function startGame() {
+            isGameRunning = true;
+            score = 0;
+            lives = 3;
+            playerX = 50;
+            velocity = 0;
+            items = [];
+            gameSpeed = 4;
+            
+            scoreEl.textContent = score;
+            livesEl.textContent = lives;
+            startOverlay.style.display = 'none';
+            gameoverOverlay.style.display = 'none';
+            btnCoupon.style.display = 'none';
+            
+            document.querySelectorAll('.item').forEach(el => el.remove());
+            document.querySelectorAll('.particle').forEach(el => el.remove());
+            
+            gameLoop = requestAnimationFrame(updateGame);
+            spawnItemLoop();
+        }
+
+        function spawnItemLoop() {
+            if (!isGameRunning) return;
+            spawnItem();
+            let nextSpawnTime = Math.max(250, 900 - (score * 20));
+            spawnTimer = setTimeout(spawnItemLoop, nextSpawnTime);
+        }
+
+        function spawnItem() {
+            const item = document.createElement('div');
+            item.classList.add('item');
+            
+            let rockChance = 0.3; 
+            if (score > 15) rockChance = 0.4;
+            if (score > 30) rockChance = 0.5;
+
+            const rand = Math.random();
+            let type = 'gift';
+            if (rand < 0.05) type = 'star'; 
+            else if (rand < 0.05 + rockChance) type = 'rock';
+
+            if(type === 'star') item.textContent = '⭐';
+            else if(type === 'rock') item.textContent = '🪨';
+            else item.textContent = '🎁';
+            
+            item.dataset.type = type;
+            
+            const leftPos = Math.random() * 90;
+            item.style.left = leftPos + '%';
+            item.style.top = '-50px';
+            
+            gameScreen.appendChild(item);
+            items.push({ el: item, top: -50, left: leftPos, active: true });
+        }
+
+        function updateGame() {
+            if (!isGameRunning) return;
+
+            if (keyLeft) velocity -= acceleration;
+            if (keyRight) velocity += acceleration;
+
+            velocity *= friction; 
+
+            if (velocity > maxSpeed) velocity = maxSpeed;
+            if (velocity < -maxSpeed) velocity = -maxSpeed;
+
+            playerX += velocity;
+
+            if (playerX < 0) { playerX = 0; velocity = 0; }
+            if (playerX > 90) { playerX = 90; velocity = 0; }
+
+            player.style.left = playerX + '%';
+            player.style.transform = `translateX(-50%) rotate(${velocity * 3}deg)`;
+
+            gameSpeed = 4 + (score * 0.15); 
+
+            items.forEach((itemObj) => {
+                if (!itemObj.active) return;
+
+                itemObj.top += gameSpeed;
+                itemObj.el.style.top = itemObj.top + 'px';
+
+                if (itemObj.top > 330 && itemObj.top < 380) { 
+                    if (Math.abs(itemObj.left - playerX) < 8) { 
+                        handleCollision(itemObj);
+                    }
+                }
+
+                if (itemObj.top > 430) {
+                    itemObj.active = false;
+                    itemObj.el.remove();
+                }
+            });
+
+            items = items.filter(i => i.active);
+            gameLoop = requestAnimationFrame(updateGame);
+        }
+
+        function handleCollision(itemObj) {
+            itemObj.active = false;
+            itemObj.el.remove();
+            
+            createParticles(playerX, 350, itemObj.el.dataset.type);
+
+            if (itemObj.el.dataset.type === 'gift') {
+                score++;
+                scoreEl.textContent = score;
+            } 
+            else if (itemObj.el.dataset.type === 'star') {
+                score += 5;
+                scoreEl.textContent = score;
+                scoreEl.style.color = "#ffd700";
+                setTimeout(() => scoreEl.style.color = "var(--accent-color)", 200);
+            }
+            else { 
+                lives--;
+                livesEl.textContent = lives;
+                gameScreen.classList.add('shake-screen');
+                setTimeout(() => gameScreen.classList.remove('shake-screen'), 400);
+                
+                if (lives <= 0) gameOver();
+            }
+        }
+
+        function createParticles(x, y, type) {
+            const colors = type === 'rock' ? ['#555', '#333'] : ['#ff0', '#f00', '#0f0', '#00f'];
+            for(let i=0; i<8; i++) {
+                const p = document.createElement('div');
+                p.className = 'particle';
+                p.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                p.style.left = x + '%';
+                p.style.top = y + 'px';
+                const mx = (Math.random() - 0.5) * 100 + 'px';
+                const my = (Math.random() - 0.5) * 100 + 'px';
+                p.style.setProperty('--mx', mx);
+                p.style.setProperty('--my', my);
+                gameScreen.appendChild(p);
+                setTimeout(() => p.remove(), 600);
+            }
+        }
+
+        function gameOver() {
+            isGameRunning = false;
+            cancelAnimationFrame(gameLoop);
+            clearTimeout(spawnTimer);
+            
+            if (score > serverHighScore) {
+                highScoreRef.set(score); 
+                resultTitle.textContent = "🏆 WORLD RECORD! 🏆";
+                resultMsg.innerHTML = `You are the World #1!<br>Score: <strong>${score}</strong>`;
+            } else {
+                resultTitle.textContent = "Game Over";
+            }
+
+            if (score >= 50) {
+                if(score <= serverHighScore) {
+                    resultTitle.textContent = "MISSION CLEAR! 🎉";
+                    resultMsg.innerHTML = `Score: <strong>${score}</strong><br>Secret Coupon Unlocked!`;
+                }
+                resultTitle.style.color = "var(--gold-color)";
+                btnCoupon.style.display = "inline-block";
+            } else {
+                if(score <= serverHighScore) {
+                    resultTitle.style.color = "#fff";
+                    resultMsg.innerHTML = `Final Score: <strong>${score}</strong><br>(Goal: 50)`;
+                }
+                btnCoupon.style.display = "none";
+            }
+            gameoverOverlay.style.display = 'flex';
+        }
+
+        function goToReservation() {
+            location.href = "reservation_en.html?code=GT-XMAS-VIP";
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Winter Tales Japan</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&family=Noto+Sans+JP:wght@300;500;700&family=Zen+Antique+Soft&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg-color: #050505;
+            --card-bg: rgba(25, 25, 30, 0.7);
+            --text-main: #ffffff;
+            --text-muted: #a0a0a0;
+            --accent: #E63946;
+            --glass-border: 1px solid rgba(255, 255, 255, 0.08);
+            --radius: 24px;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-family: 'Montserrat', 'Noto Sans JP', sans-serif;
+            min-height: 100vh;
+            background: radial-gradient(circle at top, #1a1a2e, #000000);
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* 로딩 스크린 */
+        #loader {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: #000; z-index: 9999;
+            display: flex; justify-content: center; align-items: center; flex-direction: column;
+            transition: opacity 0.5s ease-out;
+        }
+        .spinner {
+            width: 40px; height: 40px; border: 2px solid #333; border-top-color: var(--accent);
+            border-radius: 50%; animation: spin 1s infinite linear; margin-bottom: 20px;
+        }
+        .loading-text { font-family: 'Montserrat', sans-serif; letter-spacing: 4px; font-size: 0.8rem; color: #666; }
+
+        /* 메인 래퍼 */
+        .wrapper {
+            width: 100%; max-width: 1200px; padding: 60px 20px; margin: 0 auto;
+            opacity: 0; transform: translateY(30px); transition: all 0.8s ease-out;
+        }
+        .wrapper.loaded { opacity: 1; transform: translateY(0); }
+
+        header { margin-bottom: 50px; }
+        .header-sub { color: var(--accent); font-weight: 700; letter-spacing: 2px; font-size: 0.85rem; display: block; margin-bottom: 8px; }
+
+        /* ----------------------------------------------------
+           📦 반응형 벤토 그리드 시스템 (핵심)
+        ---------------------------------------------------- */
+        .bento-grid {
+            display: grid;
+            gap: 20px;
+            /* 기본(PC): 4열 */
+            grid-template-columns: repeat(4, 1fr);
+            grid-auto-rows: minmax(220px, auto);
+        }
+
+        /* 카드 공통 */
+        .card {
+            background: var(--card-bg); border: var(--glass-border); border-radius: var(--radius);
+            padding: 24px; position: relative; overflow: hidden;
+            backdrop-filter: blur(30px); -webkit-backdrop-filter: blur(30px);
+            transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            display: flex; flex-direction: column; justify-content: space-between;
+        }
+        
+        /* PC Hover 효과 */
+        @media (hover: hover) {
+            .card:hover { transform: translateY(-8px); border-color: rgba(255,255,255,0.3); z-index: 2; box-shadow: 0 20px 40px rgba(0,0,0,0.4); }
+        }
+
+        /* 카드 배치 (PC 기준) */
+        .hero { grid-column: span 2; grid-row: span 2; }
+        .weather { grid-column: span 1; grid-row: span 1; }
+        .countdown { grid-column: span 1; grid-row: span 1; }
+        .music { grid-column: span 1; grid-row: span 2; }
+        .gallery-wide { grid-column: span 2; grid-row: span 1; }
+        .info-box { grid-column: span 1; grid-row: span 1; }
+
+        /* 이미지 스타일 */
+        .card.image-bg { padding: 0; }
+        .card.image-bg img {
+            width: 100%; height: 100%; object-fit: cover;
+            transition: transform 0.8s ease; filter: brightness(0.8);
+        }
+        .card:hover.image-bg img { transform: scale(1.05); filter: brightness(1); }
+        .overlay {
+            position: absolute; bottom: 0; left: 0; width: 100%; padding: 25px;
+            background: linear-gradient(to top, rgba(0,0,0,0.9), transparent); z-index: 2;
+        }
+
+        /* 텍스트 스타일 */
+        h1 { font-size: 3.5rem; line-height: 1; font-weight: 800; letter-spacing: -1px; margin-top: 5px; }
+        h2 { font-size: 1.4rem; font-weight: 700; color: #fff; margin-bottom: 6px; }
+        .jp-text { font-family: 'Noto Sans JP', sans-serif; font-size: 0.9rem; opacity: 0.85; font-weight: 400; }
+        .label { font-size: 0.7rem; color: #ccc; letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 12px; display: block; font-weight: 600; }
+        
+        /* 날씨 & 카운트다운 */
+        .temp-display { font-size: 3.5rem; font-weight: 300; line-height: 1; }
+        .d-day-display { font-size: 4rem; color: var(--accent); line-height: 0.9; font-weight: 700; }
+
+        /* 음악 플레이어 */
+        .album-art {
+            width: 100%; aspect-ratio: 1; border-radius: 16px; margin-bottom: 20px;
+            background-size: cover; background-position: center;
+            background-image: url('https://images.unsplash.com/photo-1516466723877-e4ec1d736c8a?q=80&w=600&auto=format&fit=crop'); 
+            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* ----------------------------------------------------
+           Tablet (iPad, 768px ~ 1024px)
+           2단 그리드로 변경
+        ---------------------------------------------------- */
+        @media (max-width: 1024px) {
+            .bento-grid {
+                grid-template-columns: repeat(2, 1fr); /* 2열 */
+                grid-auto-rows: minmax(200px, auto);
+            }
+            /* 태블릿 배치 재조정 */
+            .hero { grid-column: span 2; grid-row: span 2; } /* 메인은 크게 */
+            .weather { grid-column: span 1; grid-row: span 1; }
+            .countdown { grid-column: span 1; grid-row: span 1; }
+            .music { grid-column: span 2; grid-row: span 1; display: flex; flex-direction: row; gap: 20px; align-items: center; } /* 음악 가로로 길게 */
+            .music .album-art { width: 120px; height: 120px; margin-bottom: 0; } /* 앨범아트 작게 */
+            .music > div:last-child { flex: 1; }
+            
+            .gallery-wide { grid-column: span 2; }
+            .info-box { grid-column: span 1; }
+            
+            h1 { font-size: 3rem; }
+        }
+
+        /* ----------------------------------------------------
+           Mobile (Phones, ~ 767px)
+           1단 그리드로 변경 (Stacking)
+        ---------------------------------------------------- */
+        @media (max-width: 767px) {
+            .wrapper { padding: 40px 16px; }
+            header { margin-bottom: 30px; }
+            
+            .bento-grid {
+                grid-template-columns: 1fr; /* 1열 */
+                grid-auto-rows: auto; /* 높이 자동 */
+                gap: 16px;
+            }
+
+            /* 모든 카드 1열 차지 & 높이 조정 */
+            .hero, .weather, .countdown, .music, .gallery-wide, .info-box {
+                grid-column: span 1 !important;
+                grid-row: span 1 !important;
+            }
+
+            .hero { height: 380px; } /* 메인 이미지는 시원하게 */
+            .music { flex-direction: column; align-items: flex-start; } /* 음악 다시 세로로 */
+            .music .album-art { width: 100%; height: auto; aspect-ratio: 1; margin-bottom: 15px; }
+            
+            h1 { font-size: 2.8rem; }
+            .temp-display { font-size: 3rem; }
+            .d-day-display { font-size: 3.5rem; }
+            
+            /* 모바일에서 카드 안 텍스트 크기 최적화 */
+            .card { padding: 20px; }
+        }
+        
+        /* [추가됨] 뒤로 가기 버튼 스타일 */
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            color: rgba(255,255,255,0.7);
+            text-decoration: none;
+            margin-bottom: 30px;
+            font-weight: 700;
+            font-size: 0.9rem;
+            letter-spacing: 1px;
+            transition: all 0.3s;
+        }
+        .back-btn:hover {
+            color: var(--accent);
+            transform: translateX(5px);
+        }
+    </style>
+</head>
+<body>
+
+    <div id="loader">
+        <div class="spinner"></div>
+        <div class="loading-text">LOADING WINTER</div>
+    </div>
+
+    <div class="wrapper">
+        
+        <a href="christmas_en.html" class="back-btn">
+            <i class="fas fa-arrow-left" style="margin-right: 10px;"></i> BACK TO MAIN
+        </a>
+
+        <header>
+            <span class="header-sub">2024 HOLIDAY SEASON</span>
+            <h1>Japan Winter<br><span style="color: #666;">Collection.</span></h1>
+        </header>
+
+        <div class="bento-grid">
+            <div class="card image-bg hero">
+                <img src="https://images.unsplash.com/photo-1543589077-47d81606c1bf?q=80&w=1000&auto=format&fit=crop" alt="Tokyo Christmas Tree">
+                <div class="overlay">
+                    <span class="label" style="color: var(--accent);">MAIN VIEW</span>
+                    <h2>Illumination Night</h2>
+                    <p class="jp-text">冬のイルミネーション</p>
+                </div>
+            </div>
+
+            <div class="card weather" style="background: linear-gradient(135deg, #1e3c72, #2a5298);">
+                <div style="height:100%; display:flex; flex-direction:column; justify-content:space-between;">
+                    <div style="display:flex; justify-content:space-between;">
+                        <span class="label">TOKYO LIVE</span>
+                        <div id="weather-icon"><i class="fas fa-circle-notch fa-spin"></i></div>
+                    </div>
+                    <div>
+                        <div id="temperature" class="temp-display">--°</div>
+                        <p id="weather-desc" class="jp-text" style="margin-top: 5px;">Loading...</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card countdown" style="background: #111;">
+                <span class="label">CHRISTMAS D-DAY</span>
+                <div style="flex:1; display:flex; flex-direction:column; justify-content:center; align-items:center;">
+                    <h2 id="d-day" class="d-day-display">25</h2>
+                    <p style="font-size: 0.8rem; letter-spacing: 2px;">DAYS LEFT</p>
+                </div>
+            </div>
+
+            <div class="card music">
+                <div class="album-art"></div> <div style="width: 100%;">
+                    <span class="label">LO-FI VIBES</span>
+                    <h2 style="font-size: 1.1rem;">Rainy Christmas</h2>
+                    <p class="jp-text" style="font-size: 0.8rem; color: #888;">City Pop & Jazz</p>
+                    
+                    <div style="height: 3px; background: rgba(255,255,255,0.1); margin: 15px 0; border-radius: 3px;">
+                        <div style="width: 60%; height: 100%; background: var(--accent);"></div>
+                    </div>
+                    
+                    <div style="display:flex; justify-content:space-between; font-size: 1.2rem;">
+                        <i class="fas fa-backward-step"></i>
+                        <i class="fas fa-play" style="color: var(--accent);"></i>
+                        <i class="fas fa-forward-step"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card image-bg gallery-wide">
+                <img src="https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?q=80&w=1000&auto=format&fit=crop" alt="Tokyo Neon Rain">
+                <div class="overlay">
+                    <span class="label" style="color: #4cc9f0;">CITY LIGHTS</span>
+                    <h2>Neon & Rain</h2>
+                    <p class="jp-text">雨の新宿、ネオンの光</p>
+                </div>
+            </div>
+
+            <div class="card image-bg info-box">
+                <img src="https://images.unsplash.com/photo-1516483638261-f4dbaf036963?q=80&w=600&auto=format&fit=crop" alt="Japanese Winter House">
+                <div class="overlay" style="padding: 20px;">
+                    <h2>Shirakawa-go</h2>
+                    <p class="jp-text">白川郷の雪景色</p>
+                </div>
+            </div>
+
+            <div class="card image-bg info-box">
+                <img src="https://images.unsplash.com/photo-1478436127897-769e1b3f0f36?q=80&w=600&auto=format&fit=crop" alt="Kyoto Temple Winter">
+                <div class="overlay" style="padding: 20px;">
+                    <h2>Kyoto Winter</h2>
+                    <p class="jp-text">京都の冬</p>
+                </div>
+            </div>
+        </div>
+
+        <footer style="margin-top: 50px; text-align: center; color: #444; font-size: 0.75rem;">
+            <p>IMAGES BY UNSPLASH | RESPONSIVE DESIGN</p>
+        </footer>
+    </div>
+
+    <script>
+        // 로딩 처리
+        window.addEventListener('load', () => {
+            const loader = document.getElementById('loader');
+            const wrapper = document.querySelector('.wrapper');
+            setTimeout(() => {
+                loader.style.opacity = '0';
+                setTimeout(() => {
+                    loader.style.display = 'none';
+                    wrapper.classList.add('loaded');
+                }, 500);
+            }, 500);
+        });
+
+        // 카운트다운
+        function updateTimer() {
+            const xmas = new Date(new Date().getFullYear(), 11, 25);
+            const now = new Date();
+            if (now > xmas) xmas.setFullYear(xmas.getFullYear() + 1);
+            const diff = Math.ceil((xmas - now) / (1000 * 60 * 60 * 24));
+            document.getElementById('d-day').innerText = diff;
+        }
+        updateTimer();
+
+        // 날씨 API
+        async function fetchTokyoWeather() {
+            try {
+                const response = await fetch('https://api.open-meteo.com/v1/forecast?latitude=35.6895&longitude=139.6917&current_weather=true');
+                const data = await response.json();
+                
+                const temp = Math.round(data.current_weather.temperature);
+                const code = data.current_weather.weathercode;
+                
+                document.getElementById('temperature').innerText = `${temp}°`;
+                
+                let desc = "Clear";
+                let iconClass = "fas fa-moon";
+
+                if (code <= 3) { desc = "Clear"; iconClass = "fas fa-moon"; }
+                else if (code <= 48) { desc = "Cloudy"; iconClass = "fas fa-cloud"; }
+                else if (code <= 67) { desc = "Rainy"; iconClass = "fas fa-umbrella"; }
+                else if (code <= 77) { desc = "Snow"; iconClass = "far fa-snowflake"; }
+                else { desc = "Storm"; iconClass = "fas fa-bolt"; }
+
+                document.getElementById('weather-desc').innerText = desc;
+                document.getElementById('weather-icon').innerHTML = `<i class="${iconClass}" style="font-size: 1.5rem; color: #fff;"></i>`;
+            } catch (error) {
+                document.getElementById('weather-desc').innerText = "Offline";
+            }
+        }
+        fetchTokyoWeather();
+    </script>
+</body>
+</html>

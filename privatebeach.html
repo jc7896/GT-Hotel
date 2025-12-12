@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"> <title>GT HOTEL - PRIVATE BEACH</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🏎️</text></svg>">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;500;700&family=Orbitron:wght@500;700;900&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background-color: #0f0f0f; color: white; font-family: 'Noto Sans KR', sans-serif; margin: 0; overflow-x: hidden; }
+        a { text-decoration: none; color: white; transition: 0.3s; }
+        
+        header { padding: 20px 5%; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #333; }
+        .logo { font-family: 'Orbitron'; font-size: 24px; color: #ff1e1e; font-weight: 900; }
+        
+        .container { padding: 50px 5%; max-width: 1200px; margin: 0 auto; text-align: center; }
+        .fade-up { opacity: 0; transform: translateY(30px); transition: all 0.8s ease-out; }
+        .fade-up.visible { opacity: 1; transform: translateY(0); }
+
+        h1 { font-family: 'Orbitron'; color: #ff1e1e; font-size: 40px; margin-bottom: 20px; text-shadow: 0 0 15px rgba(255, 30, 30, 0.4); }
+        
+        .beach-img { width: 100%; height: 450px; object-fit: cover; border-radius: 20px; margin-bottom: 50px; box-shadow: 0 10px 40px rgba(0,0,0,0.5); transition: 0.5s; }
+        .beach-img:hover { transform: scale(1.02); }
+        
+        .activity-grid { display: flex; justify-content: center; gap: 30px; flex-wrap: wrap; text-align: left; }
+        .activity-card { background: #1a1a1a; padding: 30px; border-radius: 15px; width: 300px; border: 1px solid #333; transition: 0.4s; position: relative; overflow: hidden; }
+        .activity-card:hover { transform: translateY(-10px); border-color: #ff1e1e; background: #222; }
+        
+        .icon { font-size: 40px; margin-bottom: 15px; display: block; }
+        .act-title { font-family: 'Orbitron'; font-size: 20px; font-weight: bold; margin-bottom: 10px; color: white; }
+        .act-desc { color: #888; font-size: 14px; line-height: 1.6; }
+
+        .btn-back { display: inline-block; margin-top: 50px; padding: 12px 30px; border: 1px solid #555; border-radius: 5px; background: #111; }
+        .btn-back:hover { background: white; color: black; }
+
+        /* 소리 버튼 */
+        .sound-btn { position: fixed; bottom: 30px; right: 30px; background: rgba(0,0,0,0.7); border: 2px solid white; color: white; padding: 10px 20px; border-radius: 30px; cursor: pointer; font-weight: bold; z-index: 9999; transition: 0.3s; }
+        .sound-btn:hover { background: white; color: black; }
+
+        /* [모바일 반응형 스타일] */
+        @media (max-width: 768px) {
+            h1 { font-size: 28px; margin-bottom: 15px; }
+            .container { padding: 30px 5%; }
+            .beach-img { height: 250px; margin-bottom: 30px; }
+            
+            /* 액티비티 카드 세로 정렬 */
+            .activity-grid { flex-direction: column; align-items: center; gap: 20px; }
+            .activity-card { width: 100%; max-width: 400px; }
+            
+            .btn-back { width: 100%; display: block; text-align: center; box-sizing: border-box; }
+            
+            /* 소리 버튼 위치 조정 */
+            .sound-btn { bottom: 20px; right: 20px; padding: 8px 16px; font-size: 12px; }
+        }
+    </style>
+</head>
+<body>
+    <audio id="beachSound" src="beach.mp3" loop autoplay></audio>
+
+    <header>
+        <div class="logo">GT <span>BEACH</span></div>
+    </header>
+
+    <div class="container">
+        <h1 class="fade-up">EXCLUSIVE SUNSET PARADISE</h1>
+        <p class="fade-up" style="color:#aaa; margin-bottom: 40px;">오직 GT 호텔 투숙객만을 위한 프라이빗 해변</p>
+        
+        <img src="https://images.pexels.com/photos/1005417/pexels-photo-1005417.jpeg?auto=compress&cs=tinysrgb&w=1260" class="beach-img fade-up">
+
+        <div class="activity-grid">
+            <div class="activity-card fade-up">
+                <span class="icon">🍹</span><div class="act-title">SUNSET BAR</div><p class="act-desc">수평선 너머로 지는 태양을 바라보며 즐기는 시그니처 칵테일.</p>
+            </div>
+            <div class="activity-card fade-up">
+                <span class="icon">🏄‍♂️</span><div class="act-title">SURFING CLASS</div><p class="act-desc">프로 강사와 함께하는 프라이빗 서핑 레슨.</p>
+            </div>
+            <div class="activity-card fade-up">
+                <span class="icon">🔥</span><div class="act-title">BONFIRE NIGHT</div><p class="act-desc">매주 금요일 밤, 해변에서 펼쳐지는 캠프파이어.</p>
+            </div>
+        </div>
+
+        <a href="index.html" class="btn-back fade-up">← 메인으로 돌아가기</a>
+    </div>
+
+    <button class="sound-btn" onclick="toggleSound()">🔊 SOUND ON</button>
+
+    <script>
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => { if(entry.isIntersecting) entry.target.classList.add('visible'); });
+        }, { threshold: 0.1 });
+        document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
+
+        // 로드 시 자동재생 시도 & 언어 확인
+        window.addEventListener('load', function() {
+            const audio = document.getElementById("beachSound");
+            const btn = document.querySelector(".sound-btn");
+            
+            // 재생 시도
+            const playPromise = audio.play();
+            if (playPromise !== undefined) {
+                playPromise.then(_ => {
+                    // 성공하면 끄기 버튼으로
+                    btn.innerText = "🔇 SOUND OFF";
+                    btn.style.borderColor = "#ff1e1e";
+                    btn.style.color = "#ff1e1e";
+                }).catch(error => {
+                    console.log("Autoplay blocked");
+                });
+            }
+
+            // 언어에 따라 뒤로가기 링크 변경
+            const lang = sessionStorage.getItem('siteLang');
+            const backBtn = document.querySelector('.btn-back');
+            if (lang === 'en' && backBtn) {
+                backBtn.href = 'index_en.html';
+                backBtn.innerText = "← BACK TO MAIN";
+            }
+        });
+
+        function toggleSound() {
+            const audio = document.getElementById("beachSound");
+            const btn = document.querySelector(".sound-btn");
+            
+            if (audio.paused) {
+                audio.play();
+                btn.innerText = "🔇 SOUND OFF";
+                btn.style.borderColor = "#ff1e1e";
+                btn.style.color = "#ff1e1e";
+            } else {
+                audio.pause();
+                btn.innerText = "🔊 SOUND ON";
+                btn.style.borderColor = "white";
+                btn.style.color = "white";
+            }
+        }
+    </script>
+</body>
+</html>
