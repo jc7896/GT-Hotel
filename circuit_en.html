@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>F1 Reaction Test</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🚦</text></svg>">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&display=swap" rel="stylesheet">
+    <style>
+        /* CSS는 한국어 버전과 동일 */
+        body { background: #1a1a1a; color: white; font-family: 'Orbitron', sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; user-select: none; transition: background-color 0.1s; cursor: pointer; }
+        
+        .lights-container {
+            display: flex; gap: 15px; margin-bottom: 60px; background: #000; padding: 30px; border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.7);
+        }
+        .light {
+            width: 70px; height: 70px; border-radius: 50%;
+            background-color: #333; border: 4px solid #555; transition: 0.05s;
+        }
+        .light.on { background-color: #ff0000; box-shadow: 0 0 40px #ff0000; border-color: #fff; transform: scale(1.05); }
+
+        .game-area {
+            width: 100%; height: 40vh; display: flex; flex-direction: column;
+            justify-content: center; align-items: center;
+        }
+        
+        h1 { font-size: 3.5rem; margin: 0; color: #fff; text-shadow: 0 5px 10px rgba(0,0,0,0.5); text-align: center; }
+        p { color: #888; margin-top: 15px; font-size: 1.2rem; }
+        
+        .result { font-size: 5rem; color: #00ff00; display: none; text-shadow: 0 0 20px #00ff00; margin-bottom: 10px; }
+        .rank { font-size: 1.5rem; color: #ffd700; display: none; }
+
+        .back-link { position: fixed; bottom: 30px; color: #555; text-decoration: none; font-size: 1rem; cursor: auto; }
+        .back-link:hover { color: #fff; }
+
+        body.go { background-color: #005500; }
+        body.foul { animation: shake 0.3s; background-color: #550000; }
+
+        @keyframes shake {
+            0% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            50% { transform: translateX(10px); }
+            75% { transform: translateX(-10px); }
+            100% { transform: translateX(0); }
+        }
+    </style>
+</head>
+<body onmousedown="handleClick()" ontouchstart="handleClick()">
+
+    <div class="lights-container">
+        <div class="light" id="l1"></div>
+        <div class="light" id="l2"></div>
+        <div class="light" id="l3"></div>
+        <div class="light" id="l4"></div>
+        <div class="light" id="l5"></div>
+    </div>
+
+    <div class="game-area" id="gameArea">
+        <h1 id="statusText">CLICK TO START</h1>
+        <p id="subText">Click anywhere on the screen</p>
+        <div class="result" id="resultText">0.000s</div>
+        <div class="rank" id="rankText"></div>
+    </div>
+
+    <a href="index_en.html" class="back-link">← Back to Main</a>
+
+    <script>
+        let state = "idle";
+        let startTime = 0;
+        let timeoutIds = [];
+
+        const lights = [1,2,3,4,5].map(i => document.getElementById(`l${i}`));
+        const statusText = document.getElementById('statusText');
+        const subText = document.getElementById('subText');
+        const resultText = document.getElementById('resultText');
+        const rankText = document.getElementById('rankText');
+
+        function handleClick(e) {
+            if (e && e.target.tagName === 'A') return;
+
+            if (state === "idle") {
+                startGame();
+            } else if (state === "waiting") {
+                foul();
+            } else if (state === "ready") {
+                finishGame();
+            } else if (state === "result" || state === "foul") {
+                resetGame();
+            }
+        }
+
+        function startGame() {
+            state = "waiting";
+            statusText.innerText = "WAIT...";
+            subText.style.opacity = 0;
+            resultText.style.display = "none";
+            rankText.style.display = "none";
+            document.body.className = "";
+            
+            let delay = 1000;
+            lights.forEach((light, i) => {
+                let id = setTimeout(() => {
+                    light.classList.add('on');
+                }, delay * (i + 1));
+                timeoutIds.push(id);
+            });
+
+            let randomDelay = 6000 + Math.random() * 4000;
+            let id = setTimeout(() => {
+                lights.forEach(l => l.classList.remove('on'));
+                state = "ready";
+                startTime = Date.now();
+                document.body.className = "go";
+                statusText.innerText = "GO!";
+            }, randomDelay);
+            timeoutIds.push(id);
+        }
+
+        function finishGame() {
+            let endTime = Date.now();
+            let reactionTime = (endTime - startTime) / 1000;
+            state = "result";
+            statusText.innerText = "YOUR TIME";
+            resultText.innerText = reactionTime + "s";
+            resultText.style.display = "block";
+            
+            let rank = "";
+            let rankColor = "#fff";
+            
+            if(reactionTime < 0.20) { rank = "🏎️ F1 CHAMPION LEVEL!"; rankColor = "#d4af37"; }
+            else if(reactionTime < 0.30) { rank = "🚗 PRO RACER"; rankColor = "#e0e0e0"; }
+            else if(reactionTime < 0.40) { rank = "🚕 TAXI DRIVER"; rankColor = "#cd7f32"; }
+            else if(reactionTime < 0.60) { rank = "🚙 SUNDAY DRIVER"; rankColor = "#888"; }
+            else { rank = "🚲 GRANDMA ON BIKE"; rankColor = "#555"; }
+
+            rankText.innerText = rank;
+            rankText.style.color = rankColor;
+            rankText.style.display = "block";
+            subText.innerText = "Click to try again";
+            subText.style.opacity = 1;
+            
+            document.body.className = "";
+        }
+
+        function foul() {
+            state = "foul";
+            clearAllTimeouts();
+            lights.forEach(l => l.classList.remove('on'));
+            statusText.innerText = "JUMP START!";
+            subText.innerText = "Too early! Click to restart";
+            subText.style.opacity = 1;
+            document.body.className = "foul";
+        }
+
+        function resetGame() {
+            state = "idle";
+            statusText.innerText = "CLICK TO START";
+            subText.innerText = "Wait for all lights out";
+            subText.style.opacity = 1;
+            resultText.style.display = "none";
+            rankText.style.display = "none";
+            lights.forEach(l => l.classList.remove('on'));
+            document.body.className = "";
+        }
+
+        function clearAllTimeouts() {
+            timeoutIds.forEach(id => clearTimeout(id));
+            timeoutIds = [];
+        }
+    </script>
+</body>
+</html>
