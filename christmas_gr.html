@@ -18,6 +18,8 @@
         body {
             font-family: 'Jost', sans-serif;
             height: 100vh;
+            /* 모바일 브라우저 주소창 대응 */
+            height: 100dvh; 
             width: 100vw;
             overflow: hidden;
             display: flex;
@@ -25,28 +27,23 @@
             justify-content: center;
             align-items: center;
             color: white;
-            /* 배경: 이미지가 로드 안될 경우를 대비한 짙은 그라데이션 */
             background: radial-gradient(circle, #1a2a6c, #b21f1f, #fdbb2d); 
-            /* 배경 이미지: 눈 덮인 숲과 작은 오두막 */
             background-image: url('https://images.unsplash.com/photo-1476304884326-cd2c88572c5f?q=80&w=2069&auto=format&fit=crop');
             background-size: cover;
             background-position: center;
         }
 
-        /* 배경 어둡게 눌러주기 (텍스트 가독성) */
         .overlay {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             background: linear-gradient(to bottom, rgba(0,0,0,0.3), rgba(0,0,0,0.8));
             z-index: 1;
         }
 
-        /* 눈 내리는 효과 컨버스 */
         #snow {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             pointer-events: none; z-index: 2;
         }
 
-        /* 뒤로 가기 버튼 스타일 */
         .back-btn {
             position: absolute;
             top: 30px;
@@ -75,21 +72,23 @@
             transform: translateX(5px);
         }
 
-        /* 중앙 메인 타이틀 */
         .hero {
             position: relative; z-index: 10;
             text-align: center;
             animation: fadeIn 2s ease-out;
+            padding: 0 20px; /* 모바일에서 좌우 여백 확보 */
         }
 
         .hero h1 {
             font-family: 'Cinzel', serif;
-            font-size: 6vw; /* 화면 크기에 비례 */
+            /* 반응형 폰트 사이즈: 최소 3rem, 화면의 8vw, 최대 6rem */
+            font-size: clamp(3rem, 8vw, 6vw); 
             font-weight: 400;
             color: var(--text-gold);
             text-shadow: 0 0 30px rgba(244, 238, 177, 0.3);
             letter-spacing: 5px;
             margin-bottom: 10px;
+            line-height: 1.1; /* 줄 간격 조정 */
         }
 
         .hero p {
@@ -99,7 +98,6 @@
             text-transform: uppercase;
         }
 
-        /* 하단 심플 위젯 바 (독 (Dock) 스타일) */
         .dock {
             position: absolute;
             bottom: 50px;
@@ -108,12 +106,15 @@
             gap: 40px;
             padding: 20px 40px;
             background: var(--glass);
-            backdrop-filter: blur(20px); /* 유리 효과 */
+            backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
             border: 1px solid var(--border);
             border-radius: 50px;
             box-shadow: 0 10px 40px rgba(0,0,0,0.5);
             transition: transform 0.3s;
+            /* 반응형 너비 제한 */
+            max-width: 90%;
+            justify-content: center;
         }
 
         .dock:hover {
@@ -134,23 +135,45 @@
         .icon { font-size: 1.5rem; }
         .info { display: flex; flex-direction: column; }
         .label { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; }
-        .value { font-size: 1.1rem; font-weight: 400; font-family: 'Cinzel', serif; }
+        .value { font-size: 1.1rem; font-weight: 400; font-family: 'Cinzel', serif; white-space: nowrap; }
 
-        /* 세로 구분선 */
         .divider { width: 1px; height: 30px; background: rgba(255,255,255,0.2); }
 
-        /* 애니메이션 */
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(20px); }
             to { opacity: 1; transform: translateY(0); }
         }
 
-        /* 모바일 대응 */
+        /* --- 반응형 미디어 쿼리 --- */
         @media (max-width: 768px) {
-            .hero h1 { font-size: 3.5rem; }
-            .dock { padding: 15px 25px; gap: 20px; width: 90%; justify-content: space-around; }
-            .label { display: none; } /* 모바일에서는 라벨 숨김 */
-            .back-btn { top: 20px; left: 20px; padding: 8px 15px; font-size: 0.8rem; }
+            .back-btn { top: 20px; left: 20px; padding: 8px 15px; font-size: 0.75rem; }
+            
+            .hero { transform: translateY(-20px); } /* 키보드나 하단 바 고려해 약간 위로 */
+            .hero p { font-size: 1rem; letter-spacing: 2px; }
+            
+            .dock { 
+                padding: 15px 20px; 
+                gap: 15px; 
+                width: 95%; 
+                bottom: 30px; 
+                border-radius: 20px;
+                justify-content: space-around;
+            }
+            
+            .dock-item {
+                flex-direction: column; /* 아이콘 위, 텍스트 아래 */
+                gap: 5px;
+                text-align: center;
+            }
+            
+            .icon { font-size: 1.2rem; }
+            .value { font-size: 0.9rem; }
+            
+            /* 모바일에서 공간 부족시 라벨 숨기기 (원래 코드 유지) */
+            .label { display: none; } 
+            
+            /* 모바일에서 구분선 숨기기 (깔끔하게) */
+            .divider { display: none; }
         }
     </style>
 </head>
@@ -159,7 +182,7 @@
     <div class="overlay"></div>
     <canvas id="snow"></canvas>
 
-    <a href="christmas.html" class="back-btn">
+    <a href="christmas_en.html" class="back-btn">
         <i class="fas fa-arrow-left"></i> BACK TO MAIN
     </a>
 
